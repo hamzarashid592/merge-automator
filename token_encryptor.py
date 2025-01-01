@@ -8,8 +8,8 @@ with open("secret.key", "rb") as key_file:
 cipher = Fernet(key)
 
 # Tokens to encrypt
-mantis_token = "8kLhQyA-e-q6Na4j5UBsyEdYckARlzB_"
-gitlab_token = "tYmz_wgNPzUsqtFKc4_d"
+mantis_token = ""
+gitlab_token = ""
 
 # Encrypt the tokens
 encrypted_mantis_token = cipher.encrypt(mantis_token.encode())
