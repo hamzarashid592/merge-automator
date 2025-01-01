@@ -1,0 +1,16 @@
+# Exclude sensitive files
+secret.key
+encrypted_tokens.txt
+credentials.json
+
+# Exclude Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Exclude logs
+logs/
+
+# Exclude environment-related files
+.env
+*.env
