@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ log_type.capitalize() }} Logs</title>
+</head>
+<body>
+    <h1>{{ log_type.capitalize() }} Logs</h1>
+    <ul>
+        {% for log_file in log_files %}
+            <li>
+                <a href="/download-log/{{ log_type }}/{{ log_file }}">{{ log_file }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/">Go Back</a>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Automator</title>
+</head>
+<body>
+    <h1>Merge Automator</h1>
+    <button id="triggerButton">Trigger Merge Automation Job</button>
+    <div id="loader" style="display:none;">
+        <p>Job in progress...</p>
+        <progress id="progressBar" value="0" max="100"></progress>
+    </div>
+
+    <h2>View Logs</h2>
+    <ul>
+        <li><button id="viewGitLogs" onclick="navigateTo('/view-logs/git')">View Git Logs</button></li>
+        <li><button id="viewMantisLogs" onclick="navigateTo('/view-logs/mantis')">View Mantis Logs</button></li>
+        <li><button id="viewMergeAnalyticsLogs" onclick="navigateTo('/view-logs/merge-analytics')">View Merge Analytics Logs</button></li>
+    </ul>
+
+    <script>
+        const triggerButton = document.getElementById("triggerButton");
+        const loader = document.getElementById("loader");
+        const progressBar = document.getElementById("progressBar");
+
+        const viewGitLogsButton = document.getElementById("viewGitLogs");
+        const viewMantisLogsButton = document.getElementById("viewMantisLogs");
+        const viewMergeAnalyticsLogsButton = document.getElementById("viewMergeAnalyticsLogs");
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        triggerButton.addEventListener("click", () => {
+            // Start the job
+            fetch("/trigger-job", { method: "POST" })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === "success") {
+                        loader.style.display = "block";
+                        triggerButton.disabled = true;
+
+                        // Disable log buttons during execution
+                        viewGitLogsButton.disabled = true;
+                        viewMantisLogsButton.disabled = true;
+                        viewMergeAnalyticsLogsButton.disabled = true;
+
+                        // Poll progress every second
+                        const interval = setInterval(() => {
+                            fetch("/progress")
+                                .then((response) => response.json())
+                                .then((progress) => {
+                                    progressBar.value = progress.percentage;
+                                    if (
+                                        progress.status === "completed" ||
+                                        progress.status.startsWith("error")
+                                    ) {
+                                        clearInterval(interval);
+                                        triggerButton.disabled = false;
+                                        loader.style.display = "none";
+
+                                        // Re-enable log buttons
+                                        viewGitLogsButton.disabled = false;
+                                        viewMantisLogsButton.disabled = false;
+                                        viewMergeAnalyticsLogsButton.disabled = false;
+
+                                        alert(
+                                            progress.status === "completed"
+                                                ? "Job completed!"
+                                                : "Error occurred: " + progress.status
+                                        );
+                                    }
+                                });
+                        }, 1000);
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ from logging_config import LoggerSetup
 from config import MANTIS_PATH, KEY_FILE, TOKEN_FILE
 from token_manager import TokenManager
 
-mantis_logger = LoggerSetup.setup_logger("mantis", "logs/mantis.log")
+mantis_logger = LoggerSetup.setup_logger("mantis", "logs/mantis")
 
 class MantisOperations:
     

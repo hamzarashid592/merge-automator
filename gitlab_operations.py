@@ -4,7 +4,7 @@ import time
 from config import GITLAB_PATH, KEY_FILE, TOKEN_FILE
 from token_manager import TokenManager
 
-git_logger = LoggerSetup.setup_logger("git", "logs/git.log")
+git_logger = LoggerSetup.setup_logger("git", "logs/git")
 
 class GitLabOperations:
     def __init__(self):
