@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merge Automator</title>
+    <script>
+        const navigateTo = (url) => {
+            window.location.href = url;
+        };
+    </script>
 </head>
 <body>
     <h1>Merge Automator</h1>
@@ -13,12 +18,15 @@
         <progress id="progressBar" value="0" max="100"></progress>
     </div>
 
-    <h2>View Logs</h2>
+    <h2>Actions</h2>
     <ul>
         <li><button id="viewGitLogs" onclick="navigateTo('/view-logs/git')">View Git Logs</button></li>
         <li><button id="viewMantisLogs" onclick="navigateTo('/view-logs/mantis')">View Mantis Logs</button></li>
         <li><button id="viewMergeAnalyticsLogs" onclick="navigateTo('/view-logs/merge-analytics')">View Merge Analytics Logs</button></li>
     </ul>
+
+    <h2>Configuration</h2>
+    <button id="manageConfigButton" onclick="navigateTo('/config-ui')">Manage Configurations</button>
 
     <script>
         const triggerButton = document.getElementById("triggerButton");
@@ -28,11 +36,8 @@
         const viewGitLogsButton = document.getElementById("viewGitLogs");
         const viewMantisLogsButton = document.getElementById("viewMantisLogs");
         const viewMergeAnalyticsLogsButton = document.getElementById("viewMergeAnalyticsLogs");
-
-        function navigateTo(url) {
-            window.location.href = url;
-        }
-
+        const manageConfigButtonButton = document.getElementById("manageConfigButton");
+        
         triggerButton.addEventListener("click", () => {
             // Start the job
             fetch("/trigger-job", { method: "POST" })
@@ -46,6 +51,7 @@
                         viewGitLogsButton.disabled = true;
                         viewMantisLogsButton.disabled = true;
                         viewMergeAnalyticsLogsButton.disabled = true;
+                        manageConfigButtonButton.disabled=true;
 
                         // Poll progress every second
                         const interval = setInterval(() => {
@@ -65,6 +71,7 @@
                                         viewGitLogsButton.disabled = false;
                                         viewMantisLogsButton.disabled = false;
                                         viewMergeAnalyticsLogsButton.disabled = false;
+                                        manageConfigButtonButton.disabled=false;
 
                                         alert(
                                             progress.status === "completed"

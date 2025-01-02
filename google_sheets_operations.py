@@ -1,7 +1,9 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from config import CODE_MOVE_SHEET_KEY, MASTER_64_TO_NEXUS, MASTER_65_TO_NEXUS
+from config_manager import ConfigurationManager
 
+# Initialize the configuration manager
+config = ConfigurationManager()
 
 class GoogleSheetsOperations:
     def __init__(self, credentials_file='credentials.json'):
@@ -36,13 +38,13 @@ class GoogleSheetsOperations:
 
         try:
             # Open the spreadsheet
-            spread_sheet = self.client.open_by_key(CODE_MOVE_SHEET_KEY)
+            spread_sheet = self.client.open_by_key(config.get("CODE_MOVE_SHEET_KEY"))
 
             # Fetch data from both sheets
-            sheet_64 = spread_sheet.worksheet(MASTER_64_TO_NEXUS)
+            sheet_64 = spread_sheet.worksheet(config.get("MASTER_64_TO_NEXUS"))
             data_64 = sheet_64.get_all_values()
 
-            sheet_65 = spread_sheet.worksheet(MASTER_65_TO_NEXUS)  # Add the name of the second sheet
+            sheet_65 = spread_sheet.worksheet(config.get("MASTER_65_TO_NEXUS"))  # Add the name of the second sheet
             data_65 = sheet_65.get_all_values()
 
             # Combine the data from both sheets
@@ -77,13 +79,13 @@ class GoogleSheetsOperations:
 
         try:
             # Open the spreadsheet
-            spread_sheet = self.client.open_by_key(CODE_MOVE_SHEET_KEY)
+            spread_sheet = self.client.open_by_key(config.get("CODE_MOVE_SHEET_KEY"))
 
             # Fetch data from both sheets
-            sheet_64 = spread_sheet.worksheet(MASTER_64_TO_NEXUS)
+            sheet_64 = spread_sheet.worksheet(config.get("MASTER_64_TO_NEXUS"))
             data_64 = sheet_64.get_all_values()
 
-            sheet_65 = spread_sheet.worksheet(MASTER_65_TO_NEXUS)  # Add the name of the second sheet
+            sheet_65 = spread_sheet.worksheet(config.get("MASTER_65_TO_NEXUS"))  # Add the name of the second sheet
             data_65 = sheet_65.get_all_values()
 
             # Combine the data from both sheets
@@ -117,13 +119,13 @@ class GoogleSheetsOperations:
 
         try:
             # Open the spreadsheet
-            spread_sheet = self.client.open_by_key(CODE_MOVE_SHEET_KEY)
+            spread_sheet = self.client.open_by_key(config.get("CODE_MOVE_SHEET_KEY"))
 
             # Fetch data from both sheets
-            sheet_64 = spread_sheet.worksheet(MASTER_64_TO_NEXUS)
+            sheet_64 = spread_sheet.worksheet(config.get("MASTER_64_TO_NEXUS"))
             data_64 = sheet_64.get_all_values()
 
-            sheet_65 = spread_sheet.worksheet(MASTER_65_TO_NEXUS)  # Add the name of the second sheet
+            sheet_65 = spread_sheet.worksheet(config.get("MASTER_65_TO_NEXUS"))  # Add the name of the second sheet
             data_65 = sheet_65.get_all_values()
 
             # Combine the data from both sheets

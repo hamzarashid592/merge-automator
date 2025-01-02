@@ -1,8 +1,11 @@
 from cryptography.fernet import Fernet
-from config import KEY_FILE, TOKEN_FILE
+from config_manager import ConfigurationManager
+
+# Initialize the configuration manager
+config = ConfigurationManager()
 
 class TokenManager:
-    def __init__(self, key_file=KEY_FILE, token_file=TOKEN_FILE):
+    def __init__(self, key_file=config.get("KEY_FILE"), token_file=config.get("TOKEN_FILE")):
         # Load the encryption key
         with open(key_file, "rb") as kf:
             self.key = kf.read()

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, send_file, abort, jsonify
+from flask import Flask, render_template, send_file, abort, jsonify, request
+import json
 import threading
 import merge_automation 
 import os
@@ -12,6 +13,7 @@ LOG_TYPES = {
     "mantis": "mantis",
     "merge-analytics": "merge_analytics"
 }
+CONFIG_FILE = "config.json"
 
 @app.route("/")
 def home():
@@ -88,6 +90,44 @@ def get_progress():
     """
     return jsonify(merge_automation.progress)
 
+# Load configuration
+def load_config():
+    with open(CONFIG_FILE, "r") as file:
+        return json.load(file)
+
+# Save configuration
+def save_config(new_config):
+    with open(CONFIG_FILE, "w") as file:
+        json.dump(new_config, file, indent=4)
+
+@app.route("/config", methods=["GET"])
+def get_config():
+    """
+    Fetch the current configuration.
+    """
+    config = load_config()
+    return jsonify(config)
+
+@app.route("/config", methods=["POST"])
+def update_config():
+    """
+    Update the configuration.
+    """
+    try:
+        new_config = request.json
+        save_config(new_config)
+        return jsonify({"status": "success", "message": "Configuration updated."})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/config-ui")
+def config_ui():
+    """
+    Render the configuration management UI.
+    """
+    return render_template("config.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+

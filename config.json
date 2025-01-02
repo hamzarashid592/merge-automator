@@ -1,0 +1,21 @@
+{
+    "CODE_MOVE_SHEET_KEY": "1e6CMMygWPFweGr36hQaRPub7_9M-OIO9aFP_tju1Kr4",
+    "GITLAB_PATH": "http://gitlab.sibisoft.com:7070",
+    "KEY_FILE": "secret.key",
+    "LOGS_DIRECTORY": "logs",
+    "MANTIS_PATH": "https://mantis.sibisoft.com",
+    "MASTER_64_TO_NEXUS": "NS6.4 to NEXUS",
+    "MASTER_65_TO_NEXUS": "NS6.5 to NEXUS",
+    "REGRESSION_ISSUES_FILTER_ID": 101979,
+    "REGRESSION_PROJECT_ID": 24,
+    "TAG_CODE_REVIEW_AWAITED": 233,
+    "TOKEN_FILE": "encrypted_tokens.txt",
+    "NEXUS_BO" : "NEXUS05-BO",
+    "NEXUS_C3" : "NEXUS05-C3",
+    "NEXUS_C4" : "NEXUS05-C4",
+    "NEXUS_APP" : "NEXUS05-APP",
+    "BO_PROJECT" : 3,
+    "C3_PROJECT" : 20,
+    "C4_PROJECT" : 30,
+    "APP_PROJECT" : 2
+}

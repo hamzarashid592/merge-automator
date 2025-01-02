@@ -1,9 +1,11 @@
 import requests
 from logging_config import LoggerSetup
-from config import MANTIS_PATH, KEY_FILE, TOKEN_FILE
 from token_manager import TokenManager
+from config_manager import ConfigurationManager
 
 mantis_logger = LoggerSetup.setup_logger("mantis", "logs/mantis")
+# Initialize the configuration manager
+config = ConfigurationManager()
 
 class MantisOperations:
     
@@ -11,10 +13,10 @@ class MantisOperations:
         """
         Initialize MantisOperations with the Mantis API base URL and authentication token.
         """
-        self.mantis_path = MANTIS_PATH
+        self.mantis_path = config.get("MANTIS_PATH")
 
         # Fetch the token dynamically
-        token_manager = TokenManager(key_file=KEY_FILE, token_file=TOKEN_FILE)
+        token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=config.get("TOKEN_FILE"))
         tokens = token_manager.get_tokens()
         self.auth_token = tokens["mantis_token"]
 
