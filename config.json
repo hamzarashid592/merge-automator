@@ -10,12 +10,13 @@
     "REGRESSION_PROJECT_ID": 24,
     "TAG_CODE_REVIEW_AWAITED": 233,
     "TOKEN_FILE": "encrypted_tokens.txt",
-    "NEXUS_BO" : "NEXUS05-BO",
-    "NEXUS_C3" : "NEXUS05-C3",
-    "NEXUS_C4" : "NEXUS05-C4",
-    "NEXUS_APP" : "NEXUS05-APP",
-    "BO_PROJECT" : 3,
-    "C3_PROJECT" : 20,
-    "C4_PROJECT" : 30,
-    "APP_PROJECT" : 2
+    "NEXUS_BO": "NEXUS05-BO",
+    "NEXUS_C3": "NEXUS05-C3",
+    "NEXUS_C4": "NEXUS05-C4",
+    "NEXUS_APP": "NEXUS05-APP",
+    "BO_PROJECT": 3,
+    "C3_PROJECT": 20,
+    "C4_PROJECT": 30,
+    "APP_PROJECT": 2,
+    "EXECUTION_TIME": "17:50"
 }

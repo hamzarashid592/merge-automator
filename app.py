@@ -1,10 +1,15 @@
 from flask import Flask, render_template, send_file, abort, jsonify, request
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from datetime import datetime
 import json
 import threading
 import merge_automation 
 import os
 
 app = Flask(__name__)
+scheduler = BackgroundScheduler()
+scheduler.start()
 
 # Paths to log directories
 LOGS_DIRECTORY = "logs"
@@ -14,6 +19,47 @@ LOG_TYPES = {
     "merge-analytics": "merge_analytics"
 }
 CONFIG_FILE = "config.json"
+
+
+# Load configuration
+def load_config():
+    with open(CONFIG_FILE, "r") as file:
+        return json.load(file)
+
+# Save configuration
+def save_config(new_config):
+    with open(CONFIG_FILE, "w") as file:
+        json.dump(new_config, file, indent=4)
+
+config = load_config()
+
+# Function to run the merge automation
+def run_merge_automation():
+    try:
+        merge_automation.automate_regression_merging()
+        print(f"Job executed successfully at {datetime.now()}")
+    except Exception as e:
+        print(f"Error executing job: {e}")
+
+# Function to update the job schedule
+def update_scheduler():
+    """
+    Update the scheduler based on the configured time.
+    """
+    time_config = config.get("EXECUTION_TIME", "22:00")  # Default to 10:00 PM
+    hour, minute = map(int, time_config.split(":"))
+
+    # Remove existing job if it exists
+    scheduler.remove_all_jobs()
+
+    # Add the new job
+    scheduler.add_job(run_merge_automation, CronTrigger(hour=hour, minute=minute))
+    print(f"Job scheduled daily at {time_config}")
+
+# Initialize the scheduler
+update_scheduler()
+
+
 
 @app.route("/")
 def home():
@@ -79,7 +125,7 @@ def trigger_job():
         return jsonify({"status": "error", "message": "Job is already running."}), 400
 
     # Run the automation in a separate thread
-    threading.Thread(target=merge_automation.automate_regression_merging).start()
+    threading.Thread(target=run_merge_automation).start()
     return jsonify({"status": "success", "message": "Job started."})
 
 # Fetch the current progress
@@ -90,35 +136,25 @@ def get_progress():
     """
     return jsonify(merge_automation.progress)
 
-# Load configuration
-def load_config():
-    with open(CONFIG_FILE, "r") as file:
-        return json.load(file)
 
-# Save configuration
-def save_config(new_config):
-    with open(CONFIG_FILE, "w") as file:
-        json.dump(new_config, file, indent=4)
-
-@app.route("/config", methods=["GET"])
-def get_config():
+@app.route("/config", methods=["GET", "POST"])
+def manage_config():
     """
-    Fetch the current configuration.
-    """
-    config = load_config()
-    return jsonify(config)
-
-@app.route("/config", methods=["POST"])
-def update_config():
-    """
-    Update the configuration.
+    Manage the configuration settings.
     """
     try:
-        new_config = request.json
-        save_config(new_config)
-        return jsonify({"status": "success", "message": "Configuration updated."})
+        if request.method == "GET":
+            return jsonify(config)
+
+        if request.method == "POST":
+            new_config = request.json
+            config.update(new_config)
+            save_config(config)
+            update_scheduler()  # Update scheduler when configuration changes
+            return jsonify({"status": "success", "message": "Configuration updated."})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route("/config-ui")
 def config_ui():

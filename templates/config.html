@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurations</title>
+    <title>Configuration Management</title>
     <script>
         async function loadConfig() {
             const response = await fetch("/config");
@@ -22,7 +22,7 @@
 
                 // Input field (read-only by default)
                 const input = document.createElement("input");
-                input.type = "text";
+                input.type = key === "EXECUTION_TIME" ? "time" : "text";
                 input.name = key;
                 input.value = config[key];
                 input.readOnly = true; // Field is read-only by default
@@ -64,7 +64,7 @@
             const newConfig = {};
 
             for (const [key, value] of formData.entries()) {
-                newConfig[key] = isNaN(value) ? value : Number(value); // Convert numeric values
+                newConfig[key] = key === "EXECUTION_TIME" ? value : isNaN(value) ? value : Number(value);
             }
 
             const response = await fetch("/config", {
