@@ -37,6 +37,10 @@ class MantisOperations:
             mantis_logger.error(f'Error fetching ticket: {response.text}')
             return None
 
+    def get_ticket_url(self, ticket_number):
+        ticket_url = f"{self.mantis_path}/view.php?id={ticket_number}"
+        return ticket_url
+
     def add_note_to_ticket(self, ticket_number, note_text):
         """
         Add a note to a specific ticket.

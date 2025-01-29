@@ -85,7 +85,7 @@ def automate_regression_merging():
 
                         if (target_branch in merge_request_data.get("target_branch", "") and
                             ('QA Verified' in labels or 'QA Accepted' in labels) and
-                            ('Code Reviewed' in labels or (target_branch == 'NEXUS05-APP' and 'Reviewed' in labels))):
+                            ('Code Reviewed' in labels or 'Reviewed' in labels)):
 
                             if 'Code Move' in labels:
                                 is_code_move_ticket = True
@@ -95,7 +95,7 @@ def automate_regression_merging():
                             if merge_request_status == "opened":
                                 merge_status = gitlab.merge_merge_request(merge_request_url)
                                 if merge_status:
-                                    merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {ticket_id}")
+                                    merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
                                     mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged.")
                                 else:
                                     merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
@@ -109,11 +109,8 @@ def automate_regression_merging():
                             error_message = "Labels not valid for merging"
                             if 'QA Verified' not in labels:
                                 error_message = "QA Verified label missing in the MR, skipping it"
-                            elif 'Code Reviewed' not in labels:
-                                error_message = "Code Reviewed label missing in the MR, skipping it"
-                                mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
-                            elif target_branch == 'NEXUS05-APP' and 'Reviewed' not in labels:
-                                error_message = "Reviewed label missing in the ClubNow MR, skipping it"
+                            elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
+                                error_message = "Code Reviewed/Reviewed label missing in the MR, skipping it"
                                 mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
 
                             merge_logger.info(f"{error_message} for: {merge_request_url}")
