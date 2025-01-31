@@ -37,6 +37,11 @@ def automate_regression_merging():
         total_tickets = len(tickets)
         merge_logger.info(f"Found {total_tickets} tickets to review")
 
+        # Counters to keep track of stats
+        pending_for_qa = 0
+        pending_for_review = 0
+        successful_merges = 0
+
         for idx, ticket_data in enumerate(tickets):
             ticket_id = ticket_data["id"]
 
@@ -97,6 +102,7 @@ def automate_regression_merging():
                                 if merge_status:
                                     merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
                                     mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged.")
+                                    successful_merges = successful_merges + 1
                                 else:
                                     merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
                                     merge_logger.info(f"Skipping rest of the operations for ticket {ticket_id}")
@@ -109,9 +115,11 @@ def automate_regression_merging():
                             error_message = "Labels not valid for merging"
                             if 'QA Verified' not in labels:
                                 error_message = "QA Verified label missing in the MR, skipping it"
+                                pending_for_qa = pending_for_qa + 1
                             elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
                                 error_message = "Code Reviewed/Reviewed label missing in the MR, skipping it"
                                 mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
+                                pending_for_review = pending_for_review + 1
 
                             merge_logger.info(f"{error_message} for: {merge_request_url}")
                             all_mrs_merged = False
@@ -124,6 +132,12 @@ def automate_regression_merging():
             else:
                 merge_logger.info(f'No notes found for ticket: {ticket_id}')
         
+        # Log stats
+        merge_logger.info(f"Total Number of Tickets Processed: {total_tickets}")
+        merge_logger.info(f"Number of MR's in the QA Verification Queue: {pending_for_qa}")
+        merge_logger.info(f"Number of MR's in the Code Review Queue: {pending_for_review}")
+        merge_logger.info(f"Number of MR's Sucessfully Merged: {successful_merges}")
+
         # Mark progress as completed
         progress["status"] = "completed"
         progress["percentage"] = 100
