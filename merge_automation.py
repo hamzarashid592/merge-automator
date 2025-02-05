@@ -136,7 +136,7 @@ def automate_regression_merging():
         merge_logger.info(f"Total Number of Tickets Processed: {total_tickets}")
         merge_logger.info(f"Number of MR's in the QA Verification Queue: {pending_for_qa}")
         merge_logger.info(f"Number of MR's in the Code Review Queue: {pending_for_review}")
-        merge_logger.info(f"Number of MR's Sucessfully Merged: {successful_merges}")
+        merge_logger.info(f"Number of MR's Successfully Merged: {successful_merges}")
 
         # Mark progress as completed
         progress["status"] = "completed"
