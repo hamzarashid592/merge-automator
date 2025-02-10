@@ -87,6 +87,7 @@ def automate_regression_merging():
 
                         target_branch = get_target_branch(merge_request_url)
                         labels = merge_request_data.get("labels", [])
+                        assignee = (merge_request_data.get("assignee") or {}).get("name")
 
                         if (target_branch in merge_request_data.get("target_branch", "") and
                             ('QA Verified' in labels or 'QA Accepted' in labels) and
@@ -117,7 +118,7 @@ def automate_regression_merging():
                                 error_message = "QA Verified label missing in the MR, skipping it"
                                 pending_for_qa = pending_for_qa + 1
                             elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
-                                error_message = "Code Reviewed/Reviewed label missing in the MR, skipping it"
+                                error_message = "Code Review pending at " + assignee
                                 mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
                                 pending_for_review = pending_for_review + 1
 
