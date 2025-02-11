@@ -71,7 +71,8 @@ class GitLabOperations:
 
         for attempt in range(1, retries + 1):
             response = requests.put(merge_mr_url, headers=self.headers, verify=False)
-            if response.status_code == 200:
+            response_body = response.json()
+            if response.status_code == 200 and response_body.get("state") == "merged":
                 # git_logger.info(f"Merge request {merge_request_id} merged successfully.")
                 return True
             else:
