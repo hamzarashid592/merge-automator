@@ -118,7 +118,7 @@ def automate_regression_merging():
                                 error_message = "QA Verified label missing in the MR, skipping it"
                                 pending_for_qa = pending_for_qa + 1
                             elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
-                                error_message = "Code Review pending at " + assignee
+                                error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
                                 mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
                                 pending_for_review = pending_for_review + 1
 
@@ -146,7 +146,8 @@ def automate_regression_merging():
     except Exception as e:
         progress["status"] = f"error: {str(e)}"
         progress["percentage"] = 0
-        merge_logger.error(f"Error in automation: {str(e)}")
+        merge_logger.exception("Error in automation")
+
 
 
 if __name__ == "__main__":
