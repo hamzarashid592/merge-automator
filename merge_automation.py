@@ -66,64 +66,63 @@ def automate_regression_merging():
 
                 for note in ticket_data["notes"]:
                     note_text = note["text"]
-                    match = re.search(merge_request_pattern, note_text)
+                    matches = re.findall(merge_request_pattern, note_text)  # Extract all MR URLs
+                    
+                    if matches:
+                        for merge_request_url in matches:  # Loop through all extracted MR URLs
+                            number_of_mrs_in_ticket = number_of_mrs_in_ticket + 1
 
-                    if match:
-                        number_of_mrs_in_ticket = number_of_mrs_in_ticket + 1
-                        merge_request_url = match.group(0)
-                        # merge_logger.info(f'Found Merge Request URL: {merge_request_url}')
+                            merge_request_data = gitlab.get_merge_request(merge_request_url)
 
-                        merge_request_data = gitlab.get_merge_request(merge_request_url)
+                            if not merge_request_data:
+                                merge_logger.info(f"Unable to fetch MR data for: {merge_request_url}")
+                                merge_logger.info(f"Skipping rest of the operations for ticket {ticket_data['id']}")
+                                all_mrs_merged = False
+                                continue
 
-                        if not merge_request_data:
-                            merge_logger.info(f"Unable to fetch MR data for: {merge_request_url}")
-                            merge_logger.info(f"Skipping rest of the operations for ticket {ticket_data['id']}")
-                            all_mrs_merged = False
-                            continue
+                            merge_request_status = merge_request_data.get("state")
+                            if merge_request_status == "closed":
+                                continue
 
-                        merge_request_status = merge_request_data.get("state")
-                        if merge_request_status == "closed":
-                            continue
+                            target_branch = get_target_branch(merge_request_url)
+                            labels = merge_request_data.get("labels", [])
+                            assignee = (merge_request_data.get("assignee") or {}).get("name")
 
-                        target_branch = get_target_branch(merge_request_url)
-                        labels = merge_request_data.get("labels", [])
-                        assignee = (merge_request_data.get("assignee") or {}).get("name")
+                            if (target_branch in merge_request_data.get("target_branch", "") and
+                                ('QA Verified' in labels or 'QA Accepted' in labels) and
+                                ('Code Reviewed' in labels or 'Reviewed' in labels)):
 
-                        if (target_branch in merge_request_data.get("target_branch", "") and
-                            ('QA Verified' in labels or 'QA Accepted' in labels) and
-                            ('Code Reviewed' in labels or 'Reviewed' in labels)):
+                                if 'Code Move' in labels:
+                                    is_code_move_ticket = True
 
-                            if 'Code Move' in labels:
-                                is_code_move_ticket = True
+                                mantis.detach_tags_from_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
 
-                            mantis.detach_tags_from_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
+                                if merge_request_status == "opened":
+                                    merge_status = gitlab.merge_merge_request(merge_request_url)
+                                    if merge_status:
+                                        merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
+                                        mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged.")
+                                        successful_merges = successful_merges + 1
+                                    else:
+                                        merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
+                                        merge_logger.info(f"Skipping rest of the operations for ticket {ticket_id}")
+                                        all_mrs_merged = False
+                                        continue
+                                elif merge_request_status == "merged":
+                                    merge_logger.info(f"The MR {merge_request_url} is already merged, ticket {ticket_id}")
 
-                            if merge_request_status == "opened":
-                                merge_status = gitlab.merge_merge_request(merge_request_url)
-                                if merge_status:
-                                    merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
-                                    mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged.")
-                                    successful_merges = successful_merges + 1
-                                else:
-                                    merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
-                                    merge_logger.info(f"Skipping rest of the operations for ticket {ticket_id}")
-                                    all_mrs_merged = False
-                                    continue
-                            elif merge_request_status == "merged":
-                                merge_logger.info(f"The MR {merge_request_url} is already merged, ticket {ticket_id}")
+                            else:
+                                error_message = "Labels not valid for merging"
+                                if 'QA Verified' not in labels:
+                                    error_message = "QA Verified label missing in the MR, skipping it"
+                                    pending_for_qa = pending_for_qa + 1
+                                elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
+                                    error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
+                                    mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
+                                    pending_for_review = pending_for_review + 1
 
-                        else:
-                            error_message = "Labels not valid for merging"
-                            if 'QA Verified' not in labels:
-                                error_message = "QA Verified label missing in the MR, skipping it"
-                                pending_for_qa = pending_for_qa + 1
-                            elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
-                                error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
-                                mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
-                                pending_for_review = pending_for_review + 1
-
-                            merge_logger.info(f"{error_message} for: {merge_request_url}")
-                            all_mrs_merged = False
+                                merge_logger.info(f"{error_message} for: {merge_request_url}")
+                                all_mrs_merged = False
 
                 if all_mrs_merged and number_of_mrs_in_ticket > 0:
                     mantis.update_status_to_fixed(ticket_id)
