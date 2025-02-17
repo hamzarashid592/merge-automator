@@ -40,6 +40,7 @@ def automate_regression_merging():
         # Counters to keep track of stats
         pending_for_qa = 0
         pending_for_review = 0
+        invalid_target_branches = 0
         successful_merges = 0
 
         for idx, ticket_data in enumerate(tickets):
@@ -87,6 +88,7 @@ def automate_regression_merging():
                             target_branch = get_target_branch(merge_request_url)
                             labels = merge_request_data.get("labels", [])
                             assignee = (merge_request_data.get("assignee") or {}).get("name")
+                            author = (merge_request_data.get("author") or {}).get("name")
 
                             if (target_branch in merge_request_data.get("target_branch", "") and
                                 ('QA Verified' in labels or 'QA Accepted' in labels) and
@@ -112,16 +114,20 @@ def automate_regression_merging():
                                     merge_logger.info(f"The MR {merge_request_url} is already merged, ticket {ticket_id}")
 
                             else:
-                                error_message = "Labels not valid for merging"
-                                if 'QA Verified' not in labels:
-                                    error_message = "QA Verified label missing in the MR, skipping it"
-                                    pending_for_qa = pending_for_qa + 1
-                                elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
-                                    error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
-                                    mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
-                                    pending_for_review = pending_for_review + 1
+                                if merge_request_status == "opened": # Printing the error logs only for open MRs
+                                    error_message = "Labels not valid for merging"
+                                    if target_branch not in merge_request_data.get("target_branch", ""):
+                                        error_message = f"Invalid target branch in the MR, it should be {target_branch}, Author: {author}"
+                                        invalid_target_branches = invalid_target_branches + 1
+                                    elif 'QA Verified' not in labels:
+                                        error_message = "QA Verified label missing in the MR, skipping it"
+                                        pending_for_qa = pending_for_qa + 1
+                                    elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
+                                        error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
+                                        mantis.add_tags_to_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
+                                        pending_for_review = pending_for_review + 1
+                                    merge_logger.info(f"{error_message} for: {merge_request_url}")
 
-                                merge_logger.info(f"{error_message} for: {merge_request_url}")
                                 all_mrs_merged = False
 
                 if all_mrs_merged and number_of_mrs_in_ticket > 0:
@@ -136,6 +142,7 @@ def automate_regression_merging():
         merge_logger.info(f"Total Number of Tickets Processed: {total_tickets}")
         merge_logger.info(f"Number of MR's in the QA Verification Queue: {pending_for_qa}")
         merge_logger.info(f"Number of MR's in the Code Review Queue: {pending_for_review}")
+        merge_logger.info(f"Number of MR's with Wrong Target Branches: {invalid_target_branches}")
         merge_logger.info(f"Number of MR's Successfully Merged: {successful_merges}")
 
         # Mark progress as completed
