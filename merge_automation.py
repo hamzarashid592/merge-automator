@@ -101,7 +101,7 @@ def automate_regression_merging():
                                     merge_status = gitlab.merge_merge_request(merge_request_url)
                                     if merge_status:
                                         merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
-                                        mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged.")
+                                        mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged into <b>{target_branch}</b>.")
                                         successful_merges = successful_merges + 1
                                     else:
                                         merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
