@@ -62,7 +62,7 @@ class GoogleSheetsOperations:
                             sheet.update_cell(i + 1, 16, True)  # Update DEV Status
                             # Uncomment if QA Status also needs updating
                             # sheet.update_cell(i + 1, 17, True)
-                            return  # Exit the function once the update is complete
+                            # return  # Exit the function once the update is complete
         except Exception as e:
             raise Exception(f"Error updating status in sheets: {e}")
 
@@ -102,7 +102,7 @@ class GoogleSheetsOperations:
                         if ticket_id_from_sheet == original_ticket_id_number:
                             sheet.update_cell(i + 1, 18, comments)  # Updating the Comments
                             
-                            return  # Exit the function once the update is complete
+                            # return  # Exit the function once the update is complete
         except Exception as e:
             raise Exception(f"Error updating status in sheets: {e}")
         
@@ -142,6 +142,6 @@ class GoogleSheetsOperations:
                         if ticket_id_from_sheet == original_ticket_id_number:
                             sheet.update_cell(i + 1, 16, True)  # Update DEV Status
                             sheet.update_cell(i + 1, 18, comments)  # Updating the Comments
-                            return  # Exit the function once the update is complete
+                            # return  # Exit the function once the update is complete
         except Exception as e:
             raise Exception(f"Error updating status in sheets: {e}")
