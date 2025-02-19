@@ -111,7 +111,7 @@ def automate_regression_merging():
                                         all_mrs_merged = False
                                         continue
                                 elif merge_request_status == "merged":
-                                    merge_logger.info(f"The MR {merge_request_url} is already merged, ticket {ticket_id}")
+                                    merge_logger.info(f"The MR {merge_request_url} is already merged, Ticket: {mantis.get_ticket_url(ticket_id)}")
 
                             else:
                                 if merge_request_status == "opened": # Printing the error logs only for open MRs
