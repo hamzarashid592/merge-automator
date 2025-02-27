@@ -52,10 +52,11 @@ def automate_regression_merging():
             # Checking for code move tickets which have been marked for submitter
             if mantis.get_record_type(ticket_data) == "Code Move" and ticket_data["resolution"]["label"] == "For Submitter":
                 original_ticket_id = extract_ticket_id_from_description(ticket_data["description"])
-                mantis.add_note_to_ticket(ticket_id,"Closing this ticket as the code is already present as per the developer's investigation")
+                mantis.add_note_to_ticket(ticket_id,"Closing this ticket as the <b>code move is not required</b> as per the developer's investigation")
                 mantis.update_status_to_fixed(ticket_id)
                 mantis.close_ticket(ticket_id)
-                sheets_ops.update_comments_and_dev_status_in_sheet(original_ticket_id,"Code is already present as per the developer's investigation")
+                hyperlink_formula = f'=HYPERLINK("{mantis.get_ticket_url(ticket_id)}", "Code move not required as per the developer\'s investigation, details embedded")'
+                sheets_ops.update_comments_and_dev_status_in_sheet(original_ticket_id,hyperlink_formula)
                 merge_logger.info(f"For Submitter Code move ticket {ticket_data['id']} has been closed.")
                 continue
                 
