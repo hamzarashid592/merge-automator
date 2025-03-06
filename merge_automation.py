@@ -49,13 +49,20 @@ def automate_regression_merging():
             # Update progress percentage
             progress["percentage"] = int(((idx + 1) / total_tickets) * 100)
 
-            # Checking for code move tickets which have been marked for submitter
-            if mantis.get_record_type(ticket_data) == "Code Move" and ticket_data["resolution"]["label"] == "For Submitter":
+            is_code_move_ticket = False
+            original_ticket_id = None
+            if mantis.get_record_type(ticket_data) == "Code Move":
+                is_code_move_ticket = True
                 original_ticket_id = extract_ticket_id_from_description(ticket_data["description"])
+
+
+            # Checking for code move tickets which have been marked for submitter
+            if is_code_move_ticket and original_ticket_id and ticket_data["resolution"]["label"] == "For Submitter":
+                # original_ticket_id = extract_ticket_id_from_description(ticket_data["description"])
                 mantis.add_note_to_ticket(ticket_id,"Closing this ticket as the <b>code move is not required</b> as per the developer's investigation")
                 mantis.update_status_to_fixed(ticket_id)
                 mantis.close_ticket(ticket_id)
-                hyperlink_formula = f'=HYPERLINK("{mantis.get_ticket_url(ticket_id)}", "Code move not required as per the developer\'s investigation, details embedded")'
+                hyperlink_formula = f'=HYPERLINK("{mantis.get_ticket_url(ticket_id)}", "Code move not required as per the developer\'s investigation, details in ticket MT#{ticket_id}")'
                 sheets_ops.update_comments_and_dev_status_in_sheet(original_ticket_id,hyperlink_formula)
                 merge_logger.info(f"For Submitter Code move ticket {ticket_data['id']} has been closed.")
                 continue
@@ -63,7 +70,6 @@ def automate_regression_merging():
             if ticket_data and ticket_data.get("notes"):
                 merge_request_pattern = r"http://gitlab\.sibisoft\.com:7070/.*?/merge_requests/\d+"
                 all_mrs_merged = True
-                is_code_move_ticket = False
                 number_of_mrs_in_ticket = 0
 
                 for note in ticket_data["notes"]:
@@ -95,16 +101,17 @@ def automate_regression_merging():
                                 ('QA Verified' in labels or 'QA Accepted' in labels) and
                                 ('Code Reviewed' in labels or 'Reviewed' in labels)):
 
-                                if 'Code Move' in labels:
-                                    is_code_move_ticket = True
-
                                 mantis.detach_tags_from_ticket(ticket_id, [config.get("TAG_CODE_REVIEW_AWAITED")])
 
                                 if merge_request_status == "opened":
                                     merge_status = gitlab.merge_merge_request(merge_request_url)
                                     if merge_status:
-                                        merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
-                                        mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged into <b>{target_branch}</b>.")
+                                        if is_code_move_ticket and original_ticket_id:
+                                            merge_logger.info(f"Merge request {merge_request_url} successfully merged. Code Move Ticket ID: {mantis.get_ticket_url(original_ticket_id)}")
+                                            mantis.add_note_to_ticket(ticket_id, f"The code move MR <b>{merge_request_url}</b> has been merged into <b>{target_branch}</b>.")
+                                        else:    
+                                            merge_logger.info(f"Merge request {merge_request_url} successfully merged. Ticket ID: {mantis.get_ticket_url(ticket_id)}")
+                                            mantis.add_note_to_ticket(ticket_id, f"The MR <b>{merge_request_url}</b> has been merged into <b>{target_branch}</b>.")
                                         successful_merges = successful_merges + 1
                                     else:
                                         merge_logger.info(f"Unable to merge MR: {merge_request_url} despite trying")
@@ -133,9 +140,10 @@ def automate_regression_merging():
 
                 if all_mrs_merged and number_of_mrs_in_ticket > 0:
                     mantis.update_status_to_fixed(ticket_id)
-                    if is_code_move_ticket:
-                        original_ticket_id = extract_ticket_id_from_description(ticket_data["description"])
-                        sheets_ops.update_dev_status_in_sheet(original_ticket_id)
+                    if is_code_move_ticket and original_ticket_id:
+                        hyperlink_formula = f'=HYPERLINK("{mantis.get_ticket_url(ticket_id)}", "Code move done in ticket MT#{ticket_id}")'
+                        sheets_ops.update_comments_and_dev_status_in_sheet(original_ticket_id,hyperlink_formula)
+                        # sheets_ops.update_dev_status_in_sheet(original_ticket_id)
             else:
                 merge_logger.info(f'No notes found for ticket: {ticket_id}')
         
