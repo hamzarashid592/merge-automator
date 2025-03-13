@@ -22,6 +22,11 @@ class LoggerSetup:
             logger: Configured logger instance.
         """
         logger = logging.getLogger(name)
+
+        # Check if handlers already exist
+        if logger.hasHandlers():
+            return logger  # Prevents duplicate handlers
+
         logger.setLevel(level)
 
         # Ensure the logs directory exists
