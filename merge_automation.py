@@ -90,6 +90,8 @@ def automate_regression_merging():
 
                             merge_request_status = merge_request_data.get("state")
                             if merge_request_status == "closed":
+                                number_of_mrs_in_ticket = number_of_mrs_in_ticket - 1
+                                merge_logger.info(f"The MR {merge_request_url} is closed. Going to the next MR.")
                                 continue
 
                             target_branch = get_target_branch(merge_request_url)
