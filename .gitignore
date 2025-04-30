@@ -1,6 +1,6 @@
 # Exclude sensitive files
 secret.key
-encrypted_tokens.txt
+encrypted_tokens*.txt
 credentials.json
 
 # Exclude Python cache

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}{{ filename }}{% endblock %}
+
+{% block content %}
+<h3>{{ ticket_type|capitalize }} Log: {{ filename }}</h3>
+<a href="{{ url_for('view_logs', ticket_type=ticket_type) }}" class="btn btn-sm btn-secondary mb-3">← Back to Logs</a>
+
+<pre style="background-color: #f1f1f1; padding: 15px; border-radius: 5px; max-height: 70vh; overflow-y: auto; font-size: 14px; white-space: pre-wrap;">{{ content }}</pre>
+{% endblock %}

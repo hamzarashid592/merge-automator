@@ -1,20 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <title>{{ log_type.capitalize() }} Logs</title>
-</head>
-<body>
-    <h1>{{ log_type.capitalize() }} Logs</h1>
-    <ul>
-        {% for log_file in log_files %}
-            <li>
-                <a href="/download-log/{{ log_type }}/{{ log_file }}">{{ log_file }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="/">Go Back</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}{{ ticket_type|capitalize }} Logs{% endblock %}
+
+{% block content %}
+<h2>{{ ticket_type|capitalize }} Logs</h2>
+<a href="/" class="btn btn-sm btn-secondary mb-3">← Back to Dashboard</a>
+
+{% if log_files %}
+  <ul class="list-group">
+    {% for file in log_files %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ file }}
+        <div class="ms-4 d-flex">
+            <a href="{{ url_for('view_log_file', ticket_type=ticket_type, filename=file) }}" class="btn btn-sm btn-outline-primary me-2">View</a>
+            <a href="{{ url_for('download_log_file', ticket_type=ticket_type, filename=file) }}" class="btn btn-sm btn-primary">Download</a>
+        </div>
+          
+      </li>
+      
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No logs found for {{ ticket_type }}.</p>
+{% endif %}
+{% endblock %}

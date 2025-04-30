@@ -1,0 +1,10 @@
+{
+    "REGRESSION_ISSUES_FILTER_ID": 1022169,
+    "GENERAL_ISSUES_FILTER_ID": 102324,
+    "TOKEN_FILE": "credentials/encrypted_tokens_reg.txt",
+    "BackOffice": "NEXUS06-BO",
+    "Connect03": "NEXUS06-C3",
+    "Connect04": "NEXUS06-C4",
+    "MobileApp": "NEXUS06-APP",
+    "EXECUTION_TIME": "17:50"
+}

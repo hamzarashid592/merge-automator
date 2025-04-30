@@ -1,32 +1,38 @@
 import re
-from logging_config import LoggerSetup
-from config_manager import ConfigurationManager
+from core.logging_config import LoggerSetup
+from core.config_manager import ConfigurationManager
+from core.string_constants import StringConstants
 
 util_logger = LoggerSetup.setup_logger("utils", "logs/utils")
-# Initialize the configuration manager
-config = ConfigurationManager()
 
-def get_target_branch(merge_request_url):
+
+def get_target_branch(merge_request_url, project):
     """
     Get the target branch based on the merge request URL.
 
     Parameters:
         merge_request_url (str): The URL of the merge request.
+        project (str): Either regression or ps.
 
     Returns:
         str: The name of the target branch, or None if no match is found.
     """
+
+    # Initialize the configuration manager based on the project
+    config = ConfigurationManager(config_file=f"configs/{project}.json")
+
     if 'NS61x' in merge_request_url:
-        return config.get("NEXUS_BO")
+        return config.get("BackOffice")
     elif 'NSConnect40' in merge_request_url:
-        return config.get("NEXUS_C4")
+        return config.get("Connect04")
     elif 'nscp30' in merge_request_url:
-        return config.get("NEXUS_C3")
+        return config.get("Connect03")
     elif 'ClubNow' in merge_request_url:
-        return config.get("NEXUS_APP")
+        return config.get("MobileApp")
     else:
         util_logger.error(f"Couldn't get a target branch for the merge request: {merge_request_url}")
         return None
+
 
 def get_target_project(merge_request_url):
         """
@@ -38,6 +44,10 @@ def get_target_project(merge_request_url):
         Returns:
             int: Target project ID or None if not found.
         """
+
+        # Initialize the configuration manager
+        config = ConfigurationManager()
+        
         if 'NS61x' in merge_request_url:
             return config.get("BO_PROJECT")
         elif 'NSConnect40' in merge_request_url:

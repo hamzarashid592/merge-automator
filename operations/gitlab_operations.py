@@ -1,22 +1,24 @@
 import requests
-from logging_config import LoggerSetup
+from core.logging_config import LoggerSetup
 import time
-from token_manager import TokenManager
-from utils import get_target_project
-from config_manager import ConfigurationManager
+from encryption.token_manager import TokenManager
+from operations.utils import get_target_project
+from core.config_manager import ConfigurationManager
+from core.string_constants import StringConstants
 
 git_logger = LoggerSetup.setup_logger("git", "logs/git")
-# Initialize the configuration manager
-config = ConfigurationManager()
 
 class GitLabOperations:
-    def __init__(self):
+    def __init__(self, project):
         """
         Initialize GitLabOperations with the GitLab API base URL and authentication token.
         """
-        self.gitlab_path = config.get("GITLAB_PATH")
-
         # Fetch the token dynamically
+        # Initialize the configuration manager based on the project
+        config = ConfigurationManager(config_file=f"configs/{project}.json")
+
+        self.gitlab_path = config.get("GITLAB_PATH")
+        
         token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=config.get("TOKEN_FILE"))
         tokens = token_manager.get_tokens()
         self.auth_token = tokens["gitlab_token"]

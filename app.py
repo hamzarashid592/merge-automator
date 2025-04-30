@@ -4,22 +4,34 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 import json
 import threading
-import merge_automation 
+from projects.merger.factory import MergerFactory
 import os
+from projects.code_move_routes import code_move_bp 
+from core.config_manager import ConfigurationManager
+from core.string_constants import StringConstants
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
+app.register_blueprint(code_move_bp)
+
+# Store active merger instances by ticket type
+active_mergers = {}
+
+
 # Paths to log directories
 LOGS_DIRECTORY = "logs"
-LOG_TYPES = {
-    "git": "git",
-    "mantis": "mantis",
-    "merge-analytics": "merge_analytics"
-}
-CONFIG_FILE = "config.json"
+CONFIG_FILE = "configs/common.json"
 
+
+
+@app.route("/")
+def home():
+    """
+    Home page displaying options to trigger the job and view logs.
+    """
+    return render_template("index.html")
 
 # Load configuration
 def load_config():
@@ -34,136 +46,152 @@ def save_config(new_config):
 config = load_config()
 
 # Function to run the merge automation
-def run_merge_automation():
+def run_merge_automation(ticket_type):
     try:
-        merge_automation.automate_regression_merging()
-        print(f"Job executed successfully at {datetime.now()}")
+        merger = MergerFactory.get_merger(ticket_type)
+        active_mergers[ticket_type] = merger
+        merger.run()
+        print(f"{ticket_type.title()} job executed successfully at {datetime.now()}")
     except Exception as e:
-        print(f"Error executing job: {e}")
+        print(f"Error executing {ticket_type} job: {e}")
 
-# Function to update the job schedule
-def update_scheduler():
+
+# # Function to update the job schedule
+# def update_scheduler():
+#     """
+#     Update the scheduler based on the configured time.
+#     """
+#     time_config = config.get("EXECUTION_TIME", "22:00")  # Default to 10:00 PM
+#     hour, minute = map(int, time_config.split(":"))
+
+#     # Remove existing job if it exists
+#     scheduler.remove_all_jobs()
+
+#     # Add the new job
+#     scheduler.add_job(run_merge_automation, CronTrigger(hour=hour, minute=minute))
+#     print(f"Job scheduled daily at {time_config}")
+
+# # Initialize the scheduler
+# update_scheduler()
+
+
+@app.route("/trigger-job/<ticket_type>", methods=["GET", "POST"])
+def trigger_job(ticket_type):
     """
-    Update the scheduler based on the configured time.
+    Endpoint to trigger the merge automation job for a specific ticket type.
     """
-    time_config = config.get("EXECUTION_TIME", "22:00")  # Default to 10:00 PM
-    hour, minute = map(int, time_config.split(":"))
+    merger = active_mergers.get(ticket_type)
 
-    # Remove existing job if it exists
-    scheduler.remove_all_jobs()
+    if merger and merger.progress["status"] == "running":
+        return jsonify({"status": "error", "message": f"{ticket_type} job is already running."}), 400
 
-    # Add the new job
-    scheduler.add_job(run_merge_automation, CronTrigger(hour=hour, minute=minute))
-    print(f"Job scheduled daily at {time_config}")
-
-# Initialize the scheduler
-update_scheduler()
+    threading.Thread(target=run_merge_automation, args=(ticket_type,)).start()
+    return jsonify({"status": "success", "message": f"{ticket_type.title()} job started."})
 
 
-
-@app.route("/")
-def home():
-    """
-    Home page displaying options to trigger the job and view logs.
-    """
-    return render_template("index.html")
-
-@app.route("/view-logs/<log_type>")
-def view_logs(log_type):
-    """
-    View logs of the specified type, listed by file.
-    """
-    LOGS_DIRECTORY = "logs"
-    LOG_TYPES = {"git": "git", "mantis": "mantis", "merge-analytics": "merge_analytics"}
-
-    # Validate log type
-    if log_type not in LOG_TYPES:
-        return abort(404, description="Log type not found.")
-
-    log_files = []
-    log_path = LOGS_DIRECTORY
-
-    # Get all files for the specified log type
-    for filename in os.listdir(log_path):
-        if filename.startswith(LOG_TYPES[log_type]):
-            log_files.append(filename)
-
-    # Sort log files by date
-    log_files.sort(reverse=True)
-
-    # Render the logs page
-    return render_template("logs.html", log_type=log_type, log_files=log_files)
-
-
-@app.route("/download-log/<log_type>/<filename>")
-def download_log_file(log_type, filename):
-    """
-    Download a specific log file.
-    """
-    LOGS_DIRECTORY = "logs"
-    LOG_TYPES = {"git": "git", "mantis": "mantis", "merge-analytics": "merge_analytics"}
-
-    # Validate log type
-    if log_type not in LOG_TYPES:
-        return abort(404, description="Log type not found.")
-
-    log_path = os.path.join(LOGS_DIRECTORY, filename)
-
-    # Ensure the file exists and is within the log directory
-    if os.path.exists(log_path) and os.path.isfile(log_path):
-        return send_file(log_path, as_attachment=True)
-    else:
-        return abort(404, description="Log file not found.")
-
-
-@app.route("/trigger-job", methods=["GET", "POST"])
-def trigger_job():
-    """
-    Endpoint to trigger the merge automation job.
-    """
-    if merge_automation.progress["status"] == "running":
-        return jsonify({"status": "error", "message": "Job is already running."}), 400
-
-    # Run the automation in a separate thread
-    threading.Thread(target=run_merge_automation).start()
-    return jsonify({"status": "success", "message": "Job started."})
 
 # Fetch the current progress
-@app.route("/progress", methods=["GET"])
-def get_progress():
+@app.route("/progress/<ticket_type>", methods=["GET"])
+def get_progress(ticket_type):
     """
-    Endpoint to fetch the current progress of the job.
+    Fetch current progress of the job for a specific ticket type.
     """
-    return jsonify(merge_automation.progress)
+    merger = active_mergers.get(ticket_type)
+
+    if not merger:
+        return jsonify({"status": "idle", "percentage": 0})  # fallback for first-time view
+
+    return jsonify(merger.progress)
 
 
-@app.route("/config", methods=["GET", "POST"])
-def manage_config():
-    """
-    Manage the configuration settings.
-    """
-    try:
-        if request.method == "GET":
-            return jsonify(config)
 
-        if request.method == "POST":
-            new_config = request.json
-            config.update(new_config)
-            save_config(config)
-            update_scheduler()  # Update scheduler when configuration changes
+
+
+# Config related endpoints
+@app.route("/config/<ticket_type>", methods=["GET", "POST"])
+def manage_config(ticket_type):
+    config_path = f"configs/{ticket_type}.json"
+
+    if not os.path.exists(config_path):
+        return jsonify({"status": "error", "message": "Invalid ticket type or config not found."}), 400
+
+    config_mgr = ConfigurationManager(config_file=config_path)
+
+    if request.method == "GET":
+        common, project = config_mgr.get_sources()
+        return jsonify({"common": common, "project": project})
+
+    if request.method == "POST":
+        try:
+            new_config = request.get_json()
+            for key, value in new_config.items():
+                config_mgr.set(key, value)
             return jsonify({"status": "success", "message": "Configuration updated."})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/config-ui")
 def config_ui():
     """
     Render the configuration management UI.
     """
-    return render_template("config.html")
+    ticket_type = request.args.get("ticket_type", StringConstants.REGRESSION)
+    return render_template("config-ui.html", ticket_type=ticket_type)
+
+
+# Logging related endpoints
+@app.route("/view-logs/<ticket_type>")
+def view_logs(ticket_type):
+    """
+    View logs for a specific ticket type.
+    """
+    log_files = []
+
+    for filename in os.listdir(LOGS_DIRECTORY):
+        if filename.startswith(ticket_type):
+            log_files.append(filename)
+
+    log_files.sort(reverse=True)
+    return render_template("logs.html", ticket_type=ticket_type, log_files=log_files)
+
+@app.route("/download-log/<ticket_type>/<filename>")
+def download_log_file(ticket_type, filename):
+    """
+    Download a specific log file for a ticket type.
+    """
+    if not filename.startswith(ticket_type):
+        return abort(403, description="Unauthorized log file access.")
+
+    log_path = os.path.join(LOGS_DIRECTORY, filename)
+
+    if os.path.exists(log_path) and os.path.isfile(log_path):
+        return send_file(log_path, as_attachment=True)
+    else:
+        return abort(404, description="Log file not found.")
+
+@app.route("/view-log/<ticket_type>/<filename>")
+def view_log_file(ticket_type, filename):
+    """
+    View contents of a specific log file in-browser.
+    """
+    if not filename.startswith(ticket_type):
+        return abort(403, description="Unauthorized access.")
+
+    log_path = os.path.join(LOGS_DIRECTORY, filename)
+
+    if not os.path.exists(log_path):
+        return abort(404, description="Log file not found.")
+
+    with open(log_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    return render_template("log_viewer.html", ticket_type=ticket_type, filename=filename, content=content)
+
+
+
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 

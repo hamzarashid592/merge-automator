@@ -1,12 +1,12 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from config_manager import ConfigurationManager
+from core.config_manager import ConfigurationManager
 
 # Initialize the configuration manager
 config = ConfigurationManager()
 
 class GoogleSheetsOperations:
-    def __init__(self, credentials_file='credentials.json'):
+    def __init__(self, credentials_file='credentials/credentials.json'):
         """
         Initialize Google Sheets client using the provided credentials file.
         """
@@ -145,3 +145,28 @@ class GoogleSheetsOperations:
                             # return  # Exit the function once the update is complete
         except Exception as e:
             raise Exception(f"Error updating status in sheets: {e}")
+        
+    def add_hyperlinks_in_sheet(self):
+        """
+        Adds hyperlinks to the ticket numbers in the Ticket# column of two sheets.
+        """
+        try:
+            spread_sheet = self.client.open_by_key(config.get("CODE_MOVE_SHEET_KEY"))
+
+            sheet_64 = spread_sheet.worksheet(config.get("MASTER_64_TO_NEXUS"))
+            sheet_65 = spread_sheet.worksheet(config.get("MASTER_65_TO_NEXUS"))
+
+            for sheet in [sheet_64, sheet_65]:
+                data = sheet.get_all_values()
+                total_tickets = len(data) - 1
+                for i in range(1, len(data)):
+                    ticket_cell_value = data[i][0]
+                    if ticket_cell_value and "MT#" not in ticket_cell_value:
+                        ticket_number = ticket_cell_value.strip()
+                        if ticket_number.isdigit():
+                            mantis_link = f'{config.get("MANTIS_PATH")}/view.php?id={ticket_number}'
+                            hyperlink_formula = f'=HYPERLINK("{mantis_link}", "MT#{ticket_number}")'
+                            sheet.update_cell(i + 1, 1, hyperlink_formula)
+                            print(f"Progress: {(i / total_tickets) * 100:.2f}% ({i}/{total_tickets}) completed")
+        except Exception as e:
+            raise Exception(f"Error updating hyperlinks in sheets: {e}")

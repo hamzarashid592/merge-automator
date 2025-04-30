@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Code Move Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Code Move Dashboard</h2>
+<a href="/" class="btn btn-sm btn-secondary mb-3">← Back to Dashboard</a>
+
+<form method="POST" action="{{ url_for('code_move.start_code_move') }}">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label for="ticket_ids" class="form-label">Ticket IDs (comma-separated)</label>
+      <input type="text" class="form-control" id="ticket_ids" name="ticket_ids" required>
+    </div>
+
+    <div class="col-md-6">
+      <label for="er_date" class="form-label">ER Date</label>
+      <input type="date" class="form-control" id="er_date" name="er_date" required>
+    </div>
+
+    <div class="col-md-6">
+      <label for="target_version" class="form-label">Target Version</label>
+      <select id="target_version" name="target_version" class="form-select" required></select>
+    </div>
+
+    <div class="col-md-6">
+      <label for="target_patch" class="form-label">Target Patch</label>
+      <select id="target_patch" name="target_patch" class="form-select" required></select>
+    </div>
+
+    <div class="col-md-6">
+      <label for="qa_owner" class="form-label">QA Owner</label>
+      <select id="qa_owner" name="qa_owner" class="form-select" required></select>
+    </div>
+
+    <div class="col-md-6">
+      <label for="title_prefix" class="form-label">Prefix for the Title</label>
+      <input type="text" class="form-control" id="title_prefix" name="title_prefix" required>
+    </div>
+
+    <div class="col-12">
+      <label for="instructions" class="form-label">Instructions (optional)</label>
+      <textarea class="form-control" id="instructions" name="instructions" rows="5"></textarea>
+    </div>
+
+    <div class="col-md-6 d-flex gap-3 align-items-center">
+      <button type="submit" class="btn btn-primary" id="startBtn">Start Clone</button>
+      <a href="/code-move/config" class="btn btn-outline-primary">Configure Settings</a>
+    </div>
+  </div>
+</form>
+
+<div id="progressContainer" class="mt-4" style="display: none;">
+  <h5 id="statusText">Status: running</h5>
+  <div class="progress">
+    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuemin="0" aria-valuemax="100">0%</div>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger mt-4">Error: {{ error }}</div>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/code_move.js') }}"></script>
+{% endblock %}

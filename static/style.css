@@ -56,3 +56,25 @@ input[type="number"] {
     margin-bottom: 10px;
     box-sizing: border-box;
 }
+
+.tab {
+    padding: 10px 15px;
+    background-color: #eee;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tab.active {
+    background-color: #ccc;
+    font-weight: bold;
+}
+
+.section {
+    display: none;
+    margin-top: 20px;
+}
+
+.section.active {
+    display: block;
+}

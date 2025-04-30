@@ -1,92 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merge Automator</title>
-    <script>
-        const navigateTo = (url) => {
-            window.location.href = url;
-        };
-    </script>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-</head>
-<body>
-    <h1>Merge Automator</h1>
-    <button id="triggerButton">Trigger Merge Automation Job</button>
-    <div id="loader" style="display:none;">
-        <p>Job in progress...</p>
-        <progress id="progressBar" value="0" max="100"></progress>
-    </div>
+{% extends "base.html" %}
 
-    <h2>Actions</h2>
-    <ul>
-        <li><button id="viewGitLogs" onclick="navigateTo('/view-logs/git')">View Git Logs</button></li>
-        <li><button id="viewMantisLogs" onclick="navigateTo('/view-logs/mantis')">View Mantis Logs</button></li>
-        <li><button id="viewMergeAnalyticsLogs" onclick="navigateTo('/view-logs/merge-analytics')">View Merge Analytics Logs</button></li>
-    </ul>
+{% block title %}Merge Automation{% endblock %}
 
-    <h2>Configuration</h2>
-    <button id="manageConfigButton" onclick="navigateTo('/config-ui')">Manage Configurations</button>
+{% block content %}
+<h2 class="mb-4">Merge Automation Dashboard</h2>
 
-    <script>
-        const triggerButton = document.getElementById("triggerButton");
-        const loader = document.getElementById("loader");
-        const progressBar = document.getElementById("progressBar");
+<!-- Tabs -->
+<div class="d-flex mb-3">
+  <div class="tab me-2 active" data-type="regression">Regression</div>
+  <div class="tab me-2" data-type="ps">PS Tickets</div>
+  <div class="tab" onclick="location.href='/code-move'">Code Moves</div>
+</div>
 
-        const viewGitLogsButton = document.getElementById("viewGitLogs");
-        const viewMantisLogsButton = document.getElementById("viewMantisLogs");
-        const viewMergeAnalyticsLogsButton = document.getElementById("viewMergeAnalyticsLogs");
-        const manageConfigButtonButton = document.getElementById("manageConfigButton");
-        
-        triggerButton.addEventListener("click", () => {
-            // Start the job
-            fetch("/trigger-job", { method: "POST" })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.status === "success") {
-                        loader.style.display = "block";
-                        triggerButton.disabled = true;
+<!-- Merge Sections -->
+<div id="regression" class="section active">
+  <button onclick="triggerMerge('regression')" id="regression-btn">Trigger Regression Merge</button>
+  <div id="regression-status">Idle</div>
+  <a href="/config-ui?ticket_type=regression" class="btn btn-sm btn-secondary mt-2">Configure Regression</a>
+  <a href="/view-logs/regression" class="btn btn-sm btn-secondary mt-2">View Regression Logs</a>
 
-                        // Disable log buttons during execution
-                        viewGitLogsButton.disabled = true;
-                        viewMantisLogsButton.disabled = true;
-                        viewMergeAnalyticsLogsButton.disabled = true;
-                        manageConfigButtonButton.disabled=true;
+</div>
 
-                        // Poll progress every second
-                        const interval = setInterval(() => {
-                            fetch("/progress")
-                                .then((response) => response.json())
-                                .then((progress) => {
-                                    progressBar.value = progress.percentage;
-                                    if (
-                                        progress.status === "completed" ||
-                                        progress.status.startsWith("error")
-                                    ) {
-                                        clearInterval(interval);
-                                        triggerButton.disabled = false;
-                                        loader.style.display = "none";
+<div id="ps" class="section">
+  <button onclick="triggerMerge('ps')" id="ps-btn">Trigger PS Merge</button>
+  <div id="ps-status">Idle</div>
+    <a href="/config-ui?ticket_type=production_support" class="btn btn-sm btn-secondary mt-2">Configure PS</a>
+    <a href="/view-logs/ps" class="btn btn-sm btn-secondary mt-2">View PS Logs</a>
 
-                                        // Re-enable log buttons
-                                        viewGitLogsButton.disabled = false;
-                                        viewMantisLogsButton.disabled = false;
-                                        viewMergeAnalyticsLogsButton.disabled = false;
-                                        manageConfigButtonButton.disabled=false;
+</div>
 
-                                        alert(
-                                            progress.status === "completed"
-                                                ? "Job completed!"
-                                                : "Error occurred: " + progress.status
-                                        );
-                                    }
-                                });
-                        }, 1000);
-                    } else {
-                        alert(data.message);
-                    }
-                });
-        });
-    </script>
-</body>
-</html>
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='js/merge_dashboard.js') }}"></script>
+{% endblock %}
