@@ -17,7 +17,7 @@ class MantisOperations:
         config = ConfigurationManager(config_file=f"configs/{project}.json")
         
         self.mantis_path = config.get("MANTIS_PATH")
-        token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=config.get("TOKEN_FILE"))
+        token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=f"credentials/{StringConstants.TOKEN_PREFIX}{project}.txt")
         tokens = token_manager.get_tokens()
         self.auth_token = tokens["mantis_token"]
 

@@ -9,6 +9,7 @@ import os
 from projects.code_move_routes import code_move_bp 
 from core.config_manager import ConfigurationManager
 from core.string_constants import StringConstants
+from encryption.token_manager import TokenManager
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
@@ -188,6 +189,24 @@ def view_log_file(ticket_type, filename):
     return render_template("log_viewer.html", ticket_type=ticket_type, filename=filename, content=content)
 
 
+# Token management endpoint
+@app.route("/token-ui", methods=["GET", "POST"])
+def token_ui():
+    ticket_type = request.args.get("ticket_type", "regression")
+    key_path = "credentials/secret.key"
+    token_path = f"credentials/{StringConstants.TOKEN_PREFIX}{ticket_type}.txt"
+    token_mgr = TokenManager(key_path, token_path)
+
+    if request.method == "POST":
+        try:
+            mantis_token = request.form["mantis_token"]
+            gitlab_token = request.form["gitlab_token"]
+            token_mgr.save_tokens(mantis_token, gitlab_token)
+            return render_template("token_ui.html", success=True, ticket_type=ticket_type)
+        except Exception as e:
+            return render_template("token_ui.html", error=str(e), ticket_type=ticket_type)
+
+    return render_template("token_ui.html", ticket_type=ticket_type)
 
 
 

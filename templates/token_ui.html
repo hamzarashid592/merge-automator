@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Token Manager - {{ ticket_type|capitalize }}{% endblock %}
+
+{% block content %}
+<h2>{{ ticket_type|capitalize }} Token Configuration</h2>
+<a href="/" class="btn btn-sm btn-secondary mb-3">← Back to Dashboard</a>
+
+{% if success %}
+<div class="alert alert-success">Tokens saved successfully.</div>
+{% elif error %}
+<div class="alert alert-danger">Error: {{ error }}</div>
+{% endif %}
+
+<form method="POST">
+  <div class="mb-3">
+    <label for="mantis_token" class="form-label">Mantis Token</label>
+    <input type="text" class="form-control" id="mantis_token" name="mantis_token" required>
+  </div>
+  <div class="mb-3">
+    <label for="gitlab_token" class="form-label">GitLab Token</label>
+    <input type="text" class="form-control" id="gitlab_token" name="gitlab_token" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Save Tokens</button>
+</form>
+{% endblock %}

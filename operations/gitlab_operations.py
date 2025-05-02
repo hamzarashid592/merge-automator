@@ -19,7 +19,7 @@ class GitLabOperations:
 
         self.gitlab_path = config.get("GITLAB_PATH")
         
-        token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=config.get("TOKEN_FILE"))
+        token_manager = TokenManager(key_file=config.get("KEY_FILE"), token_file=f"credentials/{StringConstants.TOKEN_PREFIX}{project}.txt")
         tokens = token_manager.get_tokens()
         self.auth_token = tokens["gitlab_token"]
 

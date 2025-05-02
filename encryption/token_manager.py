@@ -19,3 +19,13 @@ class TokenManager:
             "mantis_token": self.cipher.decrypt(encrypted_tokens[0].strip()).decode(),
             "gitlab_token": self.cipher.decrypt(encrypted_tokens[1].strip()).decode(),
         }
+
+    def save_tokens(self, mantis_token, gitlab_token):
+        """
+        Encrypt and save tokens to the token file.
+        """
+        encrypted_mantis = self.cipher.encrypt(mantis_token.encode())
+        encrypted_gitlab = self.cipher.encrypt(gitlab_token.encode())
+
+        with open(self.token_file, "wb") as tf:
+            tf.write(encrypted_mantis + b"\n" + encrypted_gitlab)

@@ -1,5 +1,5 @@
 {
-    "REGRESSION_ISSUES_FILTER_ID": 1022169,
+    "REGRESSION_ISSUES_FILTER_ID": 102216,
     "GENERAL_ISSUES_FILTER_ID": 102324,
     "TOKEN_FILE": "credentials/encrypted_tokens_reg.txt",
     "BackOffice": "NEXUS06-BO",

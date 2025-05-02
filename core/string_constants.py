@@ -5,6 +5,8 @@ class StringConstants:
     REGRESSION = "regression"
     PROD_SUPPORT = "production_support"
 
+    TOKEN_PREFIX = "encrypted_tokens_"
+
     # Mantis Devs
     AADESH_KUMAR = 899
     ABID_ALI = 344
