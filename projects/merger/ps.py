@@ -14,7 +14,7 @@ class PSMerger(BaseMerger):
             self.progress["status"] = "running"
             self.progress["percentage"] = 0
 
-            tickets = self.mantis.get_tickets_from_filter(self.config.get("PROD_SUPPORT_ISSUES_FILTER_ID"))
+            tickets = self.mantis.get_tickets_from_filter(self.config.get("PROD_SUPPORT_ISSUES_FILTER_ID", []))
             if not tickets:
                 self.logger.info('No tickets found for the given filter.')
                 self.progress["status"] = "completed"
@@ -105,9 +105,9 @@ class PSMerger(BaseMerger):
 
                                     all_mrs_merged = False
 
-                    # if all_mrs_merged and number_of_mrs_in_ticket > 0:
-                        # self.mantis.update_status_to_fixed(ticket_id)
-                        # self.mantis.update_qa_status_to_assigned(ticket_id)
+                    if all_mrs_merged and number_of_mrs_in_ticket > 0:
+                        self.mantis.update_status_to_fixed(ticket_id)
+                        self.mantis.update_qa_status_to_assigned(ticket_id)
                         
                 else:
                     self.logger.info(f'No notes found for ticket: {ticket_id}')

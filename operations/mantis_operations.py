@@ -62,29 +62,50 @@ class MantisOperations:
         if response.status_code != 200:
             mantis_logger.error(f'Error while closing ticket {ticket_number}: {response.text}')
 
-    def get_tickets_from_filter(self, filter_id):
+    def get_tickets_from_filter(self, filter_ids):
         """
-        Get ticket IDs from a Mantis filter.
+        Get ticket data from one or more Mantis filters.
+
+        Parameters:
+            filter_ids (int or list[int]): A single filter ID or a list of filter IDs.
+
+        Returns:
+            list: Combined list of ticket data from all provided filters.
         """
-        tickets = []
-        page = 1
-        limit = 50  # Fetch up to 50 tickets per page
-        while True:
-            filter_url = f"{self.mantis_path}/api/rest/issues?filter_id={filter_id}&page={page}&limit={limit}"
-            try:
-                response = requests.get(filter_url, headers=self.headers, verify=False)
-                if response.status_code != 200:
-                    mantis_logger.error(f'Error fetching tickets from Mantis filter: {response.text}')
+        if isinstance(filter_ids, int):
+            filter_ids = [filter_ids]  # Convert single ID to list
+
+        all_tickets = []
+
+        for filter_id in filter_ids:
+            tickets = []
+            page = 1
+            limit = 50
+
+            while True:
+                filter_url = f"{self.mantis_path}/api/rest/issues?filter_id={filter_id}&page={page}&limit={limit}"
+                try:
+                    response = requests.get(filter_url, headers=self.headers, verify=False)
+                    if response.status_code != 200:
+                        mantis_logger.error(f"[Filter {filter_id}] Error fetching tickets: {response.text}")
+                        break
+
+                    ticket_data = response.json()
+                    issues = ticket_data.get("issues", [])
+                    tickets.extend(issues)
+
+                    if len(issues) < limit:
+                        break
+                    page += 1
+
+                except Exception as e:
+                    mantis_logger.error(f"[Filter {filter_id}] Exception while fetching tickets: {e}")
                     break
-                ticket_data = response.json()
-                tickets.extend(ticket_data.get("issues", []))
-                if len(ticket_data.get("issues", [])) < limit:
-                    break
-                page += 1
-            except Exception as e:
-                mantis_logger.error(f"Error fetching tickets from Mantis filter: {e}")
-                break
-        return tickets
+
+            all_tickets.extend(tickets)
+
+        return all_tickets
+
 
     def update_status_to_fixed(self, ticket_id):
         """

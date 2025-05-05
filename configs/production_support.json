@@ -4,5 +4,5 @@
     "Connect04" : "NSC40DEV66",
     "MobileApp" : "APPDEV66",
     "TOKEN_FILE": "credentials/encrypted_tokens_ps.txt",
-    "PROD_SUPPORT_ISSUES_FILTER_ID": 102269
+    "PROD_SUPPORT_ISSUES_FILTER_ID": [102269, 102316]
 }

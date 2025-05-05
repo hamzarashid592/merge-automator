@@ -9,7 +9,6 @@ class ChatNotifier:
         self.ticket_type = ticket_type
         self.log_dir = log_dir
         self.log_path = self._get_latest_log_path()
-        self.log_path = 'logs//Sample.log'
 
         # Load webhook from config
         config_mgr = ConfigurationManager()
@@ -82,9 +81,10 @@ class ChatNotifier:
             lines.append("")
 
         # Listing the successfully merged MR's
-        lines.append(f"*Successfully Merged MR's*")
-        for mr in self.merged_mrs:
-            lines.append(mr)
+        if self.merged_mrs:
+            lines.append(f"*Successfully Merged MR's*")
+            for mr in self.merged_mrs:
+                lines.append(mr)
 
         return "\n".join(lines)
 
