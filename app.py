@@ -10,6 +10,8 @@ from projects.code_move_routes import code_move_bp
 from core.config_manager import ConfigurationManager
 from core.string_constants import StringConstants
 from encryption.token_manager import TokenManager
+from notifier.chat_notifier import ChatNotifier
+from core.string_constants import StringConstants
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
@@ -26,13 +28,17 @@ LOGS_DIRECTORY = "logs"
 CONFIG_FILE = "configs/common.json"
 
 
-
 @app.route("/")
 def home():
     """
     Home page displaying options to trigger the job and view logs.
     """
-    return render_template("index.html")
+    ticket_types = {
+        "regression": StringConstants.REGRESSION,
+        "ps": StringConstants.PROD_SUPPORT
+    }
+    return render_template("index.html", ticket_types=ticket_types)
+
 
 # Load configuration
 def load_config():
@@ -53,6 +59,14 @@ def run_merge_automation(ticket_type):
         active_mergers[ticket_type] = merger
         merger.run()
         print(f"{ticket_type.title()} job executed successfully at {datetime.now()}")
+
+        notifier = ChatNotifier(
+            ticket_type=ticket_type,
+            log_dir="logs"
+        )
+        notifier.send_summary()
+
+
     except Exception as e:
         print(f"Error executing {ticket_type} job: {e}")
 

@@ -7,27 +7,31 @@
 
 <!-- Tabs -->
 <div class="d-flex mb-3">
-  <div class="tab me-2 active" data-type="regression">Regression</div>
-  <div class="tab me-2" data-type="ps">PS Tickets</div>
+  <div class="tab me-2 active" data-type="{{ ticket_types['regression'] }}">Regression</div>
+  <div class="tab me-2" data-type="{{ ticket_types['ps'] }}">PS Tickets</div>
   <div class="tab" onclick="location.href='/code-move'">Code Moves</div>
 </div>
 
 <!-- Merge Sections -->
-<div id="regression" class="section active">
-  <button onclick="triggerMerge('regression')" id="regression-btn">Trigger Regression Merge</button>
-  <div id="regression-status">Idle</div>
+<div id="{{ ticket_types['regression'] }}" class="section active">
+  <button onclick="triggerMerge('{{ ticket_types['regression'] }}')" id="{{ ticket_types['regression'] }}-btn">
+    Trigger Regression Merge
+  </button>
+  <div id="{{ ticket_types['regression'] }}-status">Idle</div>
   <a href="/config-ui?ticket_type=regression" class="btn btn-sm btn-secondary mt-2">Configure Regression</a>
   <a href="/view-logs/regression" class="btn btn-sm btn-secondary mt-2">View Regression Logs</a>
   <a href="/token-ui?ticket_type=regression" class="btn btn-sm btn-secondary mt-2">Manage Regression Tokens</a>
 
 </div>
 
-<div id="ps" class="section">
-  <button onclick="triggerMerge('ps')" id="ps-btn">Trigger PS Merge</button>
-  <div id="ps-status">Idle</div>
-    <a href="/config-ui?ticket_type=production_support" class="btn btn-sm btn-secondary mt-2">Configure PS</a>
-    <a href="/view-logs/ps" class="btn btn-sm btn-secondary mt-2">View PS Logs</a>
-    <a href="/token-ui?ticket_type=ps" class="btn btn-sm btn-secondary mt-2">Manage PS Tokens</a>
+<div id="{{ ticket_types['ps'] }}" class="section">
+  <button onclick="triggerMerge('{{ ticket_types['ps'] }}')" id="{{ ticket_types['ps'] }}-btn">
+    Trigger PS Merge
+  </button>
+  <div id="{{ ticket_types['ps'] }}-status">Idle</div>
+    <a href="/config-ui?ticket_type={{ ticket_types['ps'] }}" class="btn btn-sm btn-secondary mt-2">Configure PS</a>
+    <a href="/view-logs/{{ ticket_types['ps'] }}" class="btn btn-sm btn-secondary mt-2">View PS Logs</a>
+    <a href="/token-ui?ticket_type={{ ticket_types['ps'] }}" class="btn btn-sm btn-secondary mt-2">Manage PS Tokens</a>
 
 
 </div>
