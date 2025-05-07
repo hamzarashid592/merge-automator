@@ -21,9 +21,7 @@ class ChatNotifier:
         self.qa_skipped_mrs = set()
         self.merged_mrs = set()
         self.failed_mrs = set()
-        self.summary = {
-            "tickets_processed": 0
-        }
+        self.processed_ticket_ids = set()
 
     def _get_latest_log_path(self):
         log_files = [f for f in os.listdir(self.log_dir) if f.startswith(self.ticket_type)]
@@ -62,10 +60,14 @@ class ChatNotifier:
                     match = re.search(r"Unable to merge MR:\s+(http[^\s]+)", line)
                     if match:
                         self.failed_mrs.add(match.group(1).strip())
-
-                # Ticket summary lines
-                elif "Total Number of Tickets Processed" in line:
-                    self.summary["tickets_processed"] += int(line.split(":")[-1].strip())
+                
+                # Getting the processed tickets
+                elif "Ticket to process:" in line:
+                    match = re.search(r"Ticket to process:\s+(https?://[^\s]+)", line)
+                    if match:
+                        ticket_url = match.group(1).strip()
+                        ticket_id = ticket_url.split("=")[-1]
+                        self.processed_ticket_ids.add(ticket_id)
 
     def _build_message(self):
         lines = []
@@ -74,7 +76,7 @@ class ChatNotifier:
         lines.append(f"*🛠️ {self.ticket_type.capitalize()} Merge Summary*\n")
 
         # Final stats as a blue-style blockquote
-        lines.append("> 📦 Total Tickets Processed: {}".format(self.summary["tickets_processed"]))
+        lines.append("> 📦 Total Tickets Processed: {}".format(len(self.processed_ticket_ids)))
         lines.append("> 🧪 QA Verification Queue: {}".format(len(self.qa_skipped_mrs)))
         lines.append("> 👁️ Code Review Queue: {}".format(sum(len(urls) for urls in self.review_map.values())))
         lines.append("> ✅ MRs Successfully Merged: {}".format(len(self.merged_mrs)))
