@@ -20,6 +20,7 @@ class ChatNotifier:
         self.review_map = defaultdict(set)
         self.qa_skipped_mrs = set()
         self.merged_mrs = set()
+        self.failed_mrs = set()
         self.summary = {
             "tickets_processed": 0
         }
@@ -55,6 +56,12 @@ class ChatNotifier:
                     match = re.search(r"Merge request\s+(http[^\s]+)", line)
                     if match:
                         self.merged_mrs.add(match.group(1).strip())
+                
+                # Failed merges             
+                elif "Unable to merge MR:" in line:
+                    match = re.search(r"Unable to merge MR:\s+(http[^\s]+)", line)
+                    if match:
+                        self.failed_mrs.add(match.group(1).strip())
 
                 # Ticket summary lines
                 elif "Total Number of Tickets Processed" in line:
@@ -79,10 +86,17 @@ class ChatNotifier:
             for url in sorted(urls):
                 lines.append(url)
             lines.append("")
+        
+        # Listing the failed MRs
+        if self.failed_mrs:
+            lines.append("*❌ Merge Failures:*")
+            for url in sorted(self.failed_mrs):
+                lines.append(url)
+            lines.append("")
 
         # Listing the successfully merged MR's
         if self.merged_mrs:
-            lines.append(f"*Successfully Merged MR's*")
+            lines.append(f"*✔️ Successfully Merged MR's*")
             for mr in self.merged_mrs:
                 lines.append(mr)
 
