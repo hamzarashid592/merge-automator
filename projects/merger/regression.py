@@ -32,6 +32,7 @@ class RegressionMerger(BaseMerger):
 
             for idx, ticket_data in enumerate(tickets):
                 ticket_id = ticket_data["id"]
+                self.logger.info(f"Ticket to process: {self.mantis.get_ticket_url(ticket_number=ticket_id)}")
 
                 # Update self.progress percentage
                 self.progress["percentage"] = int(((idx + 1) / total_tickets) * 100)
