@@ -59,14 +59,7 @@ def run_merge_automation(ticket_type):
         active_mergers[ticket_type] = merger
         merger.run()
         print(f"{ticket_type.title()} job executed successfully at {datetime.now()}")
-
-        notifier = ChatNotifier(
-            ticket_type=ticket_type,
-            log_dir="logs"
-        )
-        notifier.send_summary()
-
-
+        
     except Exception as e:
         print(f"Error executing {ticket_type} job: {e}")
 

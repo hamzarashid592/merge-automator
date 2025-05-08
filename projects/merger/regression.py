@@ -144,6 +144,10 @@ class RegressionMerger(BaseMerger):
             self.logger.info(f"Number of MR's with Wrong Target Branches: {invalid_target_branches}")
             self.logger.info(f"Number of MR's Successfully Merged: {successful_merges}")
 
+            # Posting the stats to Google Chat
+            if self.chat_notifier:
+                self.chat_notifier.send_summary()
+
             # Mark self.progress as completed
             self.progress["status"] = "completed"
             self.progress["percentage"] = 100

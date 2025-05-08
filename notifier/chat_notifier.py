@@ -5,17 +5,11 @@ from collections import defaultdict
 from core.config_manager import ConfigurationManager
 
 class ChatNotifier:
-    def __init__(self, ticket_type, log_dir):
+    def __init__(self, ticket_type, log_dir, webhook_url):
         self.ticket_type = ticket_type
         self.log_dir = log_dir
         self.log_path = self._get_latest_log_path()
-
-        # Load webhook from config
-        config_mgr = ConfigurationManager()
-        self.webhook_url = config_mgr.get("WEBHOOKS", {}).get(ticket_type)
-
-        if not self.webhook_url:
-            raise ValueError(f"No webhook configured for ticket type: {ticket_type}")
+        self.webhook_url = webhook_url
 
         self.review_map = defaultdict(set)
         self.qa_skipped_mrs = set()

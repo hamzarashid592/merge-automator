@@ -10,9 +10,5 @@
     "BO_PROJECT": 3,
     "C3_PROJECT": 20,
     "C4_PROJECT": 30,
-    "APP_PROJECT": 2,    
-    "WEBHOOKS": {
-        "regression": "https://chat.googleapis.com/v1/spaces/AAQAE-k9B9U/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MDqbgFbfbyBgHkGFijSvS_RIcUYFNzLP3tMxmNmzh4M",
-        "production_support": "https://chat.googleapis.com/v1/spaces/AAQAynNy7jY/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=7g8YmDK81ujppe2yAUbt0IaKvKgY9ZH_TS4YK9Wt-h0"
-    }     
+    "APP_PROJECT": 2  
 }
