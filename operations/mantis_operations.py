@@ -72,7 +72,7 @@ class MantisOperations:
         Returns:
             list: Combined list of ticket data from all provided filters.
         """
-        
+
         # Handle comma-separated strings
         if isinstance(filter_ids, str):
             filter_ids = [int(fid.strip()) for fid in filter_ids.split(",") if fid.strip().isdigit()]
@@ -142,12 +142,32 @@ class MantisOperations:
         if response.status_code != 200:
             mantis_logger.error(f'Failed to update status for Ticket ID {ticket_id}: {response.text}')
 
+    def update_status_to_doh(self, ticket_id):
+        """
+        Update ticket status to 'Deployable on Hold'.
+        """
+        update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
+        payload = {"resolution": {"name": "Deployable on Hold"}}
+        response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
+        if response.status_code != 200:
+            mantis_logger.error(f'Failed to update status for Ticket ID {ticket_id}: {response.text}')
+
     def update_qa_status_to_assigned(self, ticket_id):
         """
         Update ticket status to 'assigned'.
         """
         update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
         payload = {"status": {"name": "assigned"}}
+        response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
+        if response.status_code != 200:
+            mantis_logger.error(f'Failed to update QA status for Ticket ID {ticket_id}: {response.text}')
+
+    def update_qa_status_to_accepted(self, ticket_id):
+        """
+        Update ticket status to 'QA Accepted'.
+        """
+        update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
+        payload = {"status": {"name": "confirmed"}}
         response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
         if response.status_code != 200:
             mantis_logger.error(f'Failed to update QA status for Ticket ID {ticket_id}: {response.text}')
@@ -274,6 +294,31 @@ class MantisOperations:
 
         except Exception as e:
             mantis_logger.error(f"Exception while unrelating issues {original_issue_id} -> {related_issue_id}: {e}")
+
+
+    def has_attached_changeset(self,ticket_history):
+        """
+        Checks whether a ticket has a changeset attached to any of the target branches.
+
+        Parameters:
+            ticket_history (list): The 'history' field from a Mantis ticket JSON response.
+
+        Returns:
+            bool: True if changeset for a known target branch is attached, False otherwise.
+        """
+        target_branches = {"NS70SS01-BO", "NS70SS01-C3", "NS70SS01-C4", "NS70SS01-APP"}
+
+        for entry in ticket_history:
+            field = entry.get("field", {}).get("name", "")
+            message = entry.get("message", "")
+            new_value = entry.get("new_value", "")
+
+            if field == "Source_changeset_attached" and message == "Changeset attached":
+                # Check if any known target branch is in the new_value
+                if any(branch in new_value for branch in target_branches):
+                    return True
+
+        return False
 
 
     def create_ticket(self, ticket_data):
