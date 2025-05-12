@@ -32,15 +32,20 @@ class ConfigurationManager:
         return self._config_data.get(key, default)
 
     def set(self, key, value):
-        self._config_data[key] = value
-        self._save_config()
+        # Load ONLY the project-level config as dict
+        project_config = self.get_project_only()
+
+        # Update the specific key
+        project_config[key] = value
+
+        # Save only updated project config
+        with open(self._config_file, "w") as f:
+            json.dump(project_config, f, indent=4)
+
 
     def reload(self):
         self._config_data = self._load_config()
 
-    def _save_config(self):
-        with open(self._config_file, "w") as file:
-            json.dump(self._config_data, file, indent=4)
 
     def to_dict(self):
         return self._config_data
@@ -61,3 +66,12 @@ class ConfigurationManager:
                 project_config = json.load(file)
 
         return common_config, project_config
+
+    def get_project_only(self):
+        """
+        Return only the keys that are declared in the project-specific config file.
+        """
+        if os.path.exists(self._config_file):
+            with open(self._config_file, "r") as f:
+                return json.load(f)
+        return {}

@@ -126,8 +126,8 @@ def manage_config(ticket_type):
     config_mgr = ConfigurationManager(config_file=config_path)
 
     if request.method == "GET":
-        common, project = config_mgr.get_sources()
-        return jsonify({"common": common, "project": project})
+        project = config_mgr.get_project_only()
+        return jsonify({"project": project})
 
     if request.method == "POST":
         try:
@@ -145,6 +145,24 @@ def config_ui():
     """
     ticket_type = request.args.get("ticket_type", StringConstants.REGRESSION)
     return render_template("config-ui.html", ticket_type=ticket_type)
+
+@app.route("/config-ui-common")
+def config_ui_common():
+    return render_template("config-ui-common.html")
+
+@app.route("/config/common", methods=["GET", "POST"])
+def manage_common_config():
+    config_mgr = ConfigurationManager("configs/common.json")
+
+    if request.method == "GET":
+        return jsonify(config_mgr.get_project_only())
+
+    if request.method == "POST":
+        new_config = request.get_json()
+        for key, value in new_config.items():
+            config_mgr.set(key, value)
+        return jsonify({"status": "success", "message": "Common configuration saved."})
+
 
 
 # Logging related endpoints

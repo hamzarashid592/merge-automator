@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const statusBox = document.getElementById("status-box");
     const form = document.getElementById("config-form");
-    // const commonSection = document.getElementById("common-config");
-    const projectSection = document.getElementById("project-config");
+    const configSection = document.getElementById("common-config");
 
     function createInput(key, value) {
         const label = document.createElement("label");
@@ -23,12 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    fetch(`/config/${ticketType}`)
+    fetch("/config/common")
         .then(res => res.json())
         .then(data => {
-            // renderConfig(data.common, commonSection);
-            renderConfig(data.project, projectSection);
-            statusBox.textContent = "Configuration loaded.";
+            renderConfig(data, configSection);
+            statusBox.textContent = "Common configuration loaded.";
         })
         .catch(() => {
             statusBox.textContent = "Error loading configuration.";
@@ -36,22 +34,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const inputs = form.querySelectorAll("input");
+        const inputs = configSection.querySelectorAll("input");
         const updated = {};
         inputs.forEach(input => updated[input.name] = input.value);
 
-        fetch(`/config/${ticketType}`, {
+        fetch("/config/common", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updated)
         })
         .then(res => res.json())
         .then(data => {
-            if (data.status === "success") {
-                statusBox.textContent = "Configuration saved.";
-            } else {
-                statusBox.textContent = `Error: ${data.message}`;
-            }
+            statusBox.textContent = data.message || "Saved.";
         })
         .catch(() => {
             statusBox.textContent = "Error saving configuration.";

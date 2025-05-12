@@ -3,7 +3,7 @@ from google.oauth2.service_account import Credentials
 from core.config_manager import ConfigurationManager
 
 # Initialize the configuration manager
-config = ConfigurationManager()
+config = ConfigurationManager(config_file="configs/common.json")
 
 class GoogleSheetsOperations:
     def __init__(self, credentials_file='credentials/credentials.json'):

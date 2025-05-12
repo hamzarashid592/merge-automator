@@ -46,7 +46,7 @@ def get_target_project(merge_request_url):
         """
 
         # Initialize the configuration manager
-        config = ConfigurationManager()
+        config = ConfigurationManager(config_file="configs/common.json")
         
         if 'NS61x' in merge_request_url:
             return config.get("BO_PROJECT")

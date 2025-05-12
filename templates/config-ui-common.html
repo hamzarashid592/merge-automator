@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Common Settings{% endblock %}
+
+{% block content %}
+<h2>Configure Common Merge Settings</h2>
+<a href="/" class="btn btn-sm btn-secondary mb-3">← Back to Dashboard</a>
+
+<div id="status-box">Loading...</div>
+
+<form id="config-form">
+    <div id="common-config"></div>
+    <button type="submit">Save Configuration</button>
+</form>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='js/config-common.js') }}"></script>
+{% endblock %}

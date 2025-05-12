@@ -6,9 +6,9 @@
     "MANTIS_PATH": "https://mantis.sibisoft.com",
     "MASTER_64_TO_NEXUS": "NS6.4 to NEXUS",
     "MASTER_65_TO_NEXUS": "NS6.5 to NEXUS",
-    "TAG_CODE_REVIEW_AWAITED": 233,
-    "BO_PROJECT": 3,
-    "C3_PROJECT": 20,
-    "C4_PROJECT": 30,
-    "APP_PROJECT": 2  
+    "TAG_CODE_REVIEW_AWAITED": "233",
+    "BO_PROJECT": "3",
+    "C3_PROJECT": "20",
+    "C4_PROJECT": "30",
+    "APP_PROJECT": "2"
 }

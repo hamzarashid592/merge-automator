@@ -1,11 +1,11 @@
 {
-    "REGRESSION_ISSUES_FILTER_ID": 102216,
-    "GENERAL_ISSUES_FILTER_ID": 102324,
+    "REGRESSION_ISSUES_FILTER_ID": "102216",
+    "GENERAL_ISSUES_FILTER_ID": "102324",
     "BackOffice": "NEXUS06-BO",
     "Connect03": "NEXUS06-C3",
     "Connect04": "NEXUS06-C4",
     "MobileApp": "NEXUS06-APP",
     "EXECUTION_TIME": "17:50",
-    "ENABLE_CHAT_NOTIFICATIONS": true,
+    "ENABLE_CHAT_NOTIFICATIONS": "true",
     "WEBHOOK_URL": "https://chat.googleapis.com/v1/spaces/AAQAE-k9B9U/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MDqbgFbfbyBgHkGFijSvS_RIcUYFNzLP3tMxmNmzh4M"
 }

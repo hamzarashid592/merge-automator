@@ -1,9 +1,9 @@
 {
-    "BackOffice" : "dev66",
-    "Connect03" : "NSCP30DEV66",
-    "Connect04" : "NSC40DEV66",
-    "MobileApp" : "APPDEV66",
-    "PROD_SUPPORT_ISSUES_FILTER_ID": [102269, 102316],
-    "ENABLE_CHAT_NOTIFICATIONS": true,
+    "BackOffice": "dev66",
+    "Connect03": "NSCP30DEV66",
+    "Connect04": "NSC40DEV66",
+    "MobileApp": "APPDEV66",
+    "PROD_SUPPORT_ISSUES_FILTER_ID": "102269,102316",
+    "ENABLE_CHAT_NOTIFICATIONS": "true",
     "WEBHOOK_URL": "https://chat.googleapis.com/v1/spaces/AAQAynNy7jY/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=7g8YmDK81ujppe2yAUbt0IaKvKgY9ZH_TS4YK9Wt-h0"
 }

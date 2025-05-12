@@ -72,6 +72,11 @@ class MantisOperations:
         Returns:
             list: Combined list of ticket data from all provided filters.
         """
+        
+        # Handle comma-separated strings
+        if isinstance(filter_ids, str):
+            filter_ids = [int(fid.strip()) for fid in filter_ids.split(",") if fid.strip().isdigit()]
+
         if isinstance(filter_ids, int):
             filter_ids = [filter_ids]  # Convert single ID to list
 
