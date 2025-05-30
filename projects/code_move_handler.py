@@ -19,23 +19,22 @@ def clone_mantis_tickets(ticket_ids, er_date, target_version, target_patch, qa_o
     progress["status"] = "running"
     progress["percentage"] = 0
 
+    cm_logger.info(f"Started the cloning process for {len(ticket_ids)} tickets having the title {title_prefix}.")
+
     try:
         for idx, ticket_id in enumerate(ticket_ids):
             ticket_data = mantis.get_ticket_data(ticket_number=ticket_id)
             valid_custom_field_ids = mantis.get_custom_fields_for_project(config.get("REGRESSION_PROJECT_ID"))
 
-            original_issue = ticket_data['issues'][0]
-            new_title = f"<b>{title_prefix}</b> {original_issue['summary']}"
+            new_title = f"<b>{title_prefix}</b> {ticket_data['summary']}"
             new_title = new_title[:125] + "..." if len(new_title) > 128 else new_title
 
             full_instructions = instructions + (
                 f"\n\nOriginal Ticket: <b>{ticket_id}</b>"
             )
 
-            cm_logger.info("Started the cloning")
-
-            new_description = original_issue['description'] + "\n\n" + full_instructions
-            category_name = original_issue['category']['name']
+            new_description = ticket_data['description'] + "\n\n" + full_instructions
+            category_name = ticket_data['category']['name']
             handler_id = mantis.get_developer_for_module(category_name)
 
             date_obj = datetime.datetime.strptime(er_date, "%Y-%m-%d")
@@ -45,14 +44,14 @@ def clone_mantis_tickets(ticket_ids, er_date, target_version, target_patch, qa_o
                 "summary": new_title,
                 "description": new_description,
                 "project": {"id": config.get("REGRESSION_PROJECT_ID")},
-                "category": original_issue['category']['name'],
-                "view_state": {"id": original_issue['view_state']['id']},
-                "priority": {"id": original_issue['priority']['id']},
-                "severity": {"id": original_issue['severity']['id']},
-                "reproducibility": {"id": original_issue['reproducibility']['id']},
-                "sticky": original_issue['sticky'],
-                "project_version": original_issue.get('project_version'),
-                "handler": {"id": handler_id or original_issue['handler']['id']} if original_issue.get('handler') else None,
+                "category": ticket_data['category']['name'],
+                "view_state": {"id": ticket_data['view_state']['id']},
+                "priority": {"id": ticket_data['priority']['id']},
+                "severity": {"id": ticket_data['severity']['id']},
+                "reproducibility": {"id": ticket_data['reproducibility']['id']},
+                "sticky": ticket_data['sticky'],
+                "project_version": ticket_data.get('project_version'),
+                "handler": {"id": handler_id or ticket_data['handler']['id']} if ticket_data.get('handler') else None,
                 "status": {"id": 50},
                 "custom_fields": [
                     {"field": {"id": 1}, "value": "Code Move"},
@@ -63,26 +62,23 @@ def clone_mantis_tickets(ticket_ids, er_date, target_version, target_patch, qa_o
                     {"field": {"id": 18}, "value": str(unix_timestamp)},
                 ] + [
                     {"field": {"id": field['field']['id']}, "value": field['value']}
-                    for field in original_issue.get('custom_fields', [])
+                    for field in ticket_data.get('custom_fields', [])
                     if field['field']['id'] in valid_custom_field_ids and field['field']['id'] not in [1, 2, 6, 18, 38, 41]
                 ],
-                "additional_information": original_issue.get('additional_information'),
-                "steps_to_reproduce": original_issue.get('steps_to_reproduce'),
-                "tags": [{"name": tag['name']} for tag in original_issue.get('tags', [])]
+                "additional_information": ticket_data.get('additional_information'),
+                "steps_to_reproduce": ticket_data.get('steps_to_reproduce'),
+                "tags": [{"name": tag['name']} for tag in ticket_data.get('tags', [])]
             }
 
             cloned_ticket_data = mantis.create_ticket(new_ticket_data)
             if cloned_ticket_data:
                 cloned_id = cloned_ticket_data['issue']['id']
-                # mantis.relate_issues(ticket_id, cloned_id)
-                # mantis.relate_issues(cloned_id, config.get("NEXUS_CONTROL_TICKET"))
+                mantis.relate_issues(ticket_id, cloned_id)
+                mantis.relate_issues(cloned_id, config.get("NEXUS_CONTROL_TICKET"))
                 cm_logger.info(f"Ticket with ID {cloned_id} successfully cloned")
                 hyperlink_comment = f'=HYPERLINK("{mantis.get_ticket_url(cloned_id)}", "Code Move Ticket: MT#{cloned_id}")'
                 sheets_ops.update_comments_in_sheet(ticket_id, hyperlink_comment)
                 
-                # Debugging
-                mantis.add_note_to_ticket(cloned_id,"Ticket filed for testing purposes, please ignore")
-                mantis.close_ticket(ticket_number=cloned_id)
             
             else:
                 error_msg = f"Failed to create ticket for ID {ticket_id}. Check logs for details."

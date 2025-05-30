@@ -35,7 +35,12 @@ def start_code_move():
             title_prefix = title_prefix
         )
 
-        return render_template("code_move.html", status=result["status"], percentage=result["percentage"], error=result.get("error", ""))
+        return render_template("code_move.html",
+                       status=result["status"],
+                       percentage=result["percentage"],
+                       error=result.get("error", ""),
+                       form_data=request.form)
+
     except Exception as e:
         logger.exception("Error starting code move job")
         return render_template("code_move.html", status="error", percentage=0, error=str(e))

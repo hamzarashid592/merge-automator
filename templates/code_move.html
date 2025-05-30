@@ -10,12 +10,12 @@
   <div class="row g-3">
     <div class="col-md-6">
       <label for="ticket_ids" class="form-label">Ticket IDs (comma-separated)</label>
-      <input type="text" class="form-control" id="ticket_ids" name="ticket_ids" required>
+      <input type="text" class="form-control" id="ticket_ids" name="ticket_ids" required value="{{ form_data.ticket_ids }}">
     </div>
 
     <div class="col-md-6">
       <label for="er_date" class="form-label">ER Date</label>
-      <input type="date" class="form-control" id="er_date" name="er_date" required>
+      <input type="date" class="form-control" id="er_date" name="er_date" required value="{{ form_data.er_date }}">
     </div>
 
     <div class="col-md-6">
@@ -35,12 +35,12 @@
 
     <div class="col-md-6">
       <label for="title_prefix" class="form-label">Prefix for the Title</label>
-      <input type="text" class="form-control" id="title_prefix" name="title_prefix" required>
+      <input type="text" class="form-control" id="title_prefix" name="title_prefix" required value="{{ form_data.title_prefix }}">
     </div>
 
     <div class="col-12">
       <label for="instructions" class="form-label">Instructions (optional)</label>
-      <textarea class="form-control" id="instructions" name="instructions" rows="5"></textarea>
+      <textarea class="form-control" id="instructions" name="instructions" rows="5">{{ form_data.instructions }}</textarea>
     </div>
 
     <div class="col-md-6 d-flex gap-3 align-items-center">

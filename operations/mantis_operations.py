@@ -423,7 +423,7 @@ class MantisOperations:
         "WO Connect" : StringConstants.MUHAMMAD_UMAIR_YOUSAF,
         "Work Order" : StringConstants.MUHAMMAD_UMAIR_YOUSAF,
         }
-        return devModuleMap[moduleName] or None
+        return devModuleMap.get(moduleName)
     
     def get_qa_for_module(self,moduleName):
         # Map for getting QA name wrt module
