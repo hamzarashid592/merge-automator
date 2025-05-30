@@ -7,6 +7,12 @@ class StringConstants:
 
     TOKEN_PREFIX = "encrypted_tokens_"
 
+    MANTIS_RESOLUTION_NEW = "New"
+    MANTIS_RESOLUTION_FIXED = "Fixed"
+    MANTIS_RESOLUTION_FOR_QA = "For QA"
+    MANTIS_RESOLUTION_PARTIALLY_FIXED = "Partially Fixed"
+    MANTIS_RESOLUTION_DOH = "Deployable on Hold"
+
     # Mantis Devs
     AADESH_KUMAR = 899
     ABID_ALI = 344

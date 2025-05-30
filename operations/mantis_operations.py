@@ -320,6 +320,35 @@ class MantisOperations:
 
         return False
 
+    def has_status_changed(self,ticket,from_status,to_status,user):
+        """
+        Checks if the ticket's status changed from 'Partially Fixed' to 'Deployable on Hold'.
+
+        Parameters:
+            ticket (dict): A Mantis ticket object (must include 'history').
+            from_status (string): The previous status.
+            to_status (string): The new status.
+            user: The user responsible for changing the status.
+
+        Returns:
+            bool: True if status changed from the from_status to the to_status, False otherwise.
+        """
+        history = ticket.get("history", [])[::-1]  # Reverse the history list
+
+
+        for entry in history:
+            if (entry.get("field", {}).get("name") == "resolution" and
+                entry.get("message") == "Current Status"):
+
+                old_status = entry.get("old_value", {}).get("name", "")
+                new_status = entry.get("new_value", {}).get("name", "")
+                mantis_user = entry.get("user", {}).get("name", "")
+
+                if mantis_user==user and old_status == from_status and new_status == to_status:
+                    return True
+
+        return False
+
 
     def create_ticket(self, ticket_data):
         """
