@@ -10,7 +10,13 @@ code_move_config_path = "configs/code_move.json"
 
 @code_move_bp.route("/code-move", methods=["GET"])
 def show_code_move_form():
-    return render_template("code_move.html")
+    # build a dict (or an object) that always has the fields your template expects
+    form_data = {
+        "ticket_ids": request.form.get("ticket_ids", ""),
+        # … add other fields here if needed
+    }
+
+    return render_template("code_move.html", form_data=form_data)
 
 @code_move_bp.route("/code-move/start", methods=["POST"])
 def start_code_move():
