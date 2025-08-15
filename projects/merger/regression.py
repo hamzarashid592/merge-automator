@@ -87,10 +87,13 @@ class RegressionMerger(BaseMerger):
                                 assignee = (merge_request_data.get("assignee") or {}).get("name")
                                 author = (merge_request_data.get("author") or {}).get("name")
 
-                                if (target_branch in merge_request_data.get("target_branch", "") and
-                                    ('QA Verified' in labels or 'QA Accepted' in labels) and
-                                    ('Code Reviewed' in labels or 'Reviewed' in labels)):
+                                branch_matches = (target_branch == merge_request_data.get("target_branch", ""))
+                                code_move_ready = is_code_move_ticket and (("Unit Tested" in labels) or ("QA Verified" in labels))
+                                qa_ready = (not is_code_move_ticket) and \
+                                        any(label in labels for label in ("QA Verified", "QA Accepted")) and \
+                                        any(label in labels for label in ("Code Reviewed", "Reviewed"))
 
+                                if branch_matches and (code_move_ready or qa_ready):
                                     self.mantis.detach_tags_from_ticket(ticket_id, [self.config.get("TAG_CODE_REVIEW_AWAITED")])
 
                                     if merge_request_status == "opened":
@@ -114,16 +117,20 @@ class RegressionMerger(BaseMerger):
                                 else:
                                     if merge_request_status == "opened": # Printing the error logs only for open MRs
                                         error_message = "Labels not valid for merging"
-                                        if target_branch not in merge_request_data.get("target_branch", ""):
+                                        if not branch_matches:
                                             error_message = f"Invalid target branch in the MR, it should be {target_branch}, Author: {author}"
                                             invalid_target_branches = invalid_target_branches + 1
-                                        elif 'QA Verified' not in labels:
-                                            error_message = "QA Verified label missing in the MR, skipping it"
-                                            pending_for_qa = pending_for_qa + 1
-                                        elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
-                                            error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
-                                            self.mantis.add_tags_to_ticket(ticket_id, [self.config.get("TAG_CODE_REVIEW_AWAITED")])
-                                            pending_for_review = pending_for_review + 1
+                                        elif is_code_move_ticket and ("Unit Tested" not in labels):
+                                            error_message = "Code move not unit tested"                                        
+                                            # self.mantis.update_status_to_new(ticket_id=ticket_id)
+                                        elif not qa_ready:
+                                            if 'QA Verified' not in labels:
+                                                error_message = "QA Verified label missing in the MR, skipping it"
+                                                pending_for_qa = pending_for_qa + 1
+                                            elif 'Code Reviewed' not in labels and 'Reviewed' not in labels:
+                                                error_message = "Code Review pending at " + (assignee if assignee is not None else "Unknown")
+                                                self.mantis.add_tags_to_ticket(ticket_id, [self.config.get("TAG_CODE_REVIEW_AWAITED")])
+                                                pending_for_review = pending_for_review + 1
                                         self.logger.info(f"{error_message} for: {merge_request_url}")
 
                                     all_mrs_merged = False
@@ -133,7 +140,6 @@ class RegressionMerger(BaseMerger):
                         if is_code_move_ticket and original_ticket_id:
                             hyperlink_formula = f'=HYPERLINK("{self.mantis.get_ticket_url(ticket_id)}", "Code move done in ticket MT#{ticket_id}")'
                             self.sheets.update_comments_and_dev_status_in_sheet(original_ticket_id,hyperlink_formula)
-                            # self.sheets.update_dev_status_in_sheet(original_ticket_id)
                 else:
                     self.logger.info(f'No notes found for ticket: {ticket_id}')
             
