@@ -27,7 +27,7 @@ def modify_tickets():
         progress["percentage"] = 0
 
         # tickets = mantis.get_tickets_from_filter(config.get("GENERAL_ISSUES_FILTER_ID"))
-        tickets = [441297,440484,423103,441150,435163,439855,440160,440813,440811,434687,438191,439753,439087,438376,439604,439319,437510,437495,437111,437138,437486,437307,438219,438276,438277,438403,438422,438615]
+        tickets = [441562,441560,441535,441528,427830,427828,441573,427990,441578,441572,441565,441529,441489,441476,428062,427827,441537,428025,426544,441544,441567,441536,441508]
 
 
         if not tickets:
@@ -64,17 +64,19 @@ def modify_tickets():
 
             # mantis.update_status_to_new(ticket_id=ticket_id)
 
-            mantis.add_note_to_ticket(ticket_number=ticket_id,note_text=f"Relating the ticket to <b>{CONTROL_TICKET_DESC}</b> and removing its link from <b>{OLD_CONTROL_TICKET}</b>.")
+            # mantis.add_note_to_ticket(ticket_number=ticket_id,note_text=f"Code for this ticket has been moved into <b>NEXUS07-BO</b> in the following MR:\n\n<b>http://gitlab.sibisoft.com:7070/root/NS61x/-/merge_requests/75560</b>")
 
-            mantis.relate_issues(ticket_id,CONTROL_TICKET)
+            # mantis.relate_issues(ticket_id,CONTROL_TICKET)
 
-            mantis.unrelate_issues(ticket_id,OLD_CONTROL_TICKET)
+            # mantis.unrelate_issues(ticket_id,CONTROL_TICKET)
 
             # mantis.update_status_to_new(ticket_id=ticket_id)
 
             # mantis.update_qa_status_to_assigned(ticket_id=ticket_id)
 
             # mantis.update_owner(ticket_id=ticket_id,owner_id=StringConstants.SYED_KHURRAM_KAMRAN)
+
+            mantis.update_status_to_for_qa(ticket_id=ticket_id)
 
             ticket_logger.info(f"Updated the details for {mantis.get_ticket_url(ticket_id)}")
 

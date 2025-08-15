@@ -152,6 +152,16 @@ class MantisOperations:
         if response.status_code != 200:
             mantis_logger.error(f'Failed to update status for Ticket ID {ticket_id}: {response.text}')
 
+    def update_status_to_for_qa(self, ticket_id):
+        """
+        Update ticket status to 'For QA'.
+        """
+        update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
+        payload = {"resolution": {"name": "For QA"}}
+        response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
+        if response.status_code != 200:
+            mantis_logger.error(f'Failed to update status for Ticket ID {ticket_id}: {response.text}')
+
     def update_qa_status_to_assigned(self, ticket_id):
         """
         Update ticket status to 'assigned'.
