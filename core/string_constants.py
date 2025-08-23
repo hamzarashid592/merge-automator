@@ -35,6 +35,7 @@ class StringConstants:
     SYEDA_ZUNAIRA_AHMED = 756
     SYED_ZAIN_BADAR_UDDIN = 1038
     SYED_MOIZ_ISMAIL = 779
+    FARAZ_ABBASI = 366
 
     # Mantis QAs
     ADEENA_SHAHAB = 'Adeena Shahab (QA)'
