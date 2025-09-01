@@ -305,6 +305,40 @@ class MantisOperations:
         except Exception as e:
             mantis_logger.error(f"Exception while unrelating issues {original_issue_id} -> {related_issue_id}: {e}")
 
+    def delete_all_relationships(self, ticket_id):
+        """
+        Delete all relationships from the specified ticket.
+        """
+        try:
+            # Fetch ticket data including relationships
+            issue_data = self.get_ticket_data(ticket_number=ticket_id)
+            relationships = issue_data.get("relationships", [])
+
+            if not relationships:
+                mantis_logger.info(f"No relationships found for ticket {ticket_id}.")
+                return
+
+            for relation in relationships:
+                related_issue_id = relation.get("issue", {}).get("id")
+                relationship_id = relation.get("id")
+
+                if not relationship_id or not related_issue_id:
+                    mantis_logger.warning(f"Invalid relationship structure found in ticket {ticket_id}. Skipping...")
+                    continue
+
+                # Build the DELETE URL
+                delete_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}/relationships/{relationship_id}"
+                delete_response = requests.delete(delete_url, headers=self.headers, verify=False)
+
+                if delete_response.status_code == 200:
+                    mantis_logger.info(f"Removed relationship {relationship_id} (related to issue {related_issue_id}) from ticket {ticket_id}.")
+                else:
+                    mantis_logger.error(f"Failed to delete relationship {relationship_id} from ticket {ticket_id}: {delete_response.text}")
+
+        except Exception as e:
+            mantis_logger.error(f"Exception while deleting all relationships from ticket {ticket_id}: {e}")
+
+
 
     def has_attached_changeset(self,ticket_history):
         """

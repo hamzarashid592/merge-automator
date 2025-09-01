@@ -12,6 +12,6 @@ if __name__ == "__main__":
 
     # mantis.update_owner(423574,StringConstants.SYED_KHURRAM_KAMRAN)
 
-    # modify_tickets()
+    modify_tickets()
 
-    plan_sprint()
+    # plan_sprint()

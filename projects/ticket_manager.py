@@ -76,7 +76,9 @@ def modify_tickets():
 
             # mantis.update_owner(ticket_id=ticket_id,owner_id=StringConstants.SYED_KHURRAM_KAMRAN)
 
-            mantis.update_status_to_for_qa(ticket_id=ticket_id)
+            # mantis.update_status_to_for_qa(ticket_id=ticket_id)
+
+            mantis.delete_all_relationships(452365)
 
             ticket_logger.info(f"Updated the details for {mantis.get_ticket_url(ticket_id)}")
 
