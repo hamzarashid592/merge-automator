@@ -1,10 +1,10 @@
 {
     "REGRESSION_ISSUES_FILTER_ID": "102711",
     "GENERAL_ISSUES_FILTER_ID": "102324",
-    "BackOffice": "NEXUS07B-BO",
-    "Connect03": "NEXUS07B-C3",
-    "Connect04": "NEXUS07B-C4",
-    "MobileApp": "NEXUS07B-APP",
+    "BackOffice": "NEXUS08-BO",
+    "Connect03": "NEXUS08-C3",
+    "Connect04": "NEXUS08-C4",
+    "MobileApp": "NEXUS08-APP",
     "EXECUTION_TIME": "17:50",
     "ENABLE_CHAT_NOTIFICATIONS": "true",
     "WEBHOOK_URL": "https://chat.googleapis.com/v1/spaces/AAQAE-k9B9U/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MDqbgFbfbyBgHkGFijSvS_RIcUYFNzLP3tMxmNmzh4M"
