@@ -182,6 +182,26 @@ class MantisOperations:
         if response.status_code != 200:
             mantis_logger.error(f'Failed to update QA status for Ticket ID {ticket_id}: {response.text}')
 
+    def update_title(self, ticket_id, new_title):
+        """
+        Update ticket title/summary.
+        """
+        update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
+        payload = {"summary": new_title}
+        response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
+        if response.status_code != 200:
+            mantis_logger.error(f'Failed to update title for Ticket ID {ticket_id}: {response.text}')
+
+    def update_description(self, ticket_id, new_description):
+        """
+        Update ticket description.
+        """
+        update_url = f"{self.mantis_path}/api/rest/issues/{ticket_id}"
+        payload = {"description": new_description}
+        response = requests.patch(update_url, headers=self.headers, json=payload, verify=False)
+        if response.status_code != 200:
+            mantis_logger.error(f'Failed to update description for Ticket ID {ticket_id}: {response.text}')
+
     def add_tags_to_ticket(self, ticket_number, tag_ids):
         """
         Add tags to a specific ticket.
