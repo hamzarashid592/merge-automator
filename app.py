@@ -7,6 +7,7 @@ import threading
 from projects.merger.factory import MergerFactory
 import os
 from projects.code_move_routes import code_move_bp 
+from projects.sheet_updater_routes import sheet_updater_bp
 from core.config_manager import ConfigurationManager
 from core.string_constants import StringConstants
 from encryption.token_manager import TokenManager
@@ -18,6 +19,7 @@ scheduler = BackgroundScheduler()
 scheduler.start()
 
 app.register_blueprint(code_move_bp)
+app.register_blueprint(sheet_updater_bp)
 
 # Store active merger instances by ticket type
 active_mergers = {}

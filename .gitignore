@@ -14,3 +14,5 @@ logs/
 # Exclude environment-related files
 .env
 *.env
+# Exclude Anima files
+.anima/

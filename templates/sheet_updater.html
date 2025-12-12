@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Sheet Updater{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Sheet Updater</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p class="card-text">
+            This tool updates the Google Sheet with ticket status based on Mantis tickets and GitLab merge requests.
+        </p>
+        
+        <form id="sheet-updater-form">
+            <div class="mb-3">
+                <label for="sheet_url" class="form-label">Google Sheet URL</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="sheet_url" 
+                    name="sheet_url" 
+                    value="{{ sheet_url }}" 
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    required
+                >
+                <small class="form-text text-muted">
+                    Enter the full URL of the Google Sheet to update.
+                </small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="start-btn">
+                Start Update
+            </button>
+        </form>
+        
+        <div class="mt-4">
+            <h5>Status</h5>
+            <div id="status-display" class="alert alert-info">
+                Idle
+            </div>
+            
+            <div id="progress-container" style="display: none;">
+                <div class="progress">
+                    <div 
+                        id="progress-bar" 
+                        class="progress-bar progress-bar-striped progress-bar-animated" 
+                        role="progressbar" 
+                        style="width: 0%"
+                        aria-valuenow="0" 
+                        aria-valuemin="0" 
+                        aria-valuemax="100"
+                    >
+                        0%
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="/view-logs/sheet_updater" class="btn btn-sm btn-secondary">View Logs</a>
+            <a href="/" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    #status-display {
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .progress {
+        height: 30px;
+        margin-top: 10px;
+    }
+    
+    .progress-bar {
+        font-size: 14px;
+        line-height: 30px;
+    }
+</style>
+
+<script>
+    let pollInterval = null;
+    
+    document.getElementById('sheet-updater-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const startBtn = document.getElementById('start-btn');
+        const statusDisplay = document.getElementById('status-display');
+        const progressContainer = document.getElementById('progress-container');
+        
+        // Disable button
+        startBtn.disabled = true;
+        statusDisplay.className = 'alert alert-info';
+        statusDisplay.textContent = 'Starting...';
+        
+        // Send request
+        fetch('/sheet-updater/start', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                statusDisplay.textContent = data.message;
+                progressContainer.style.display = 'block';
+                startPolling();
+            } else {
+                statusDisplay.className = 'alert alert-danger';
+                statusDisplay.textContent = data.message;
+                startBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            statusDisplay.className = 'alert alert-danger';
+            statusDisplay.textContent = 'Error starting job: ' + error.message;
+            startBtn.disabled = false;
+        });
+    });
+    
+    function startPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+        
+        pollInterval = setInterval(checkProgress, 2000);
+    }
+    
+    function checkProgress() {
+        const startBtn = document.getElementById('start-btn');
+        const statusDisplay = document.getElementById('status-display');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        
+        fetch('/sheet-updater/progress')
+            .then(response => response.json())
+            .then(data => {
+                // Update progress bar
+                const percentage = data.percentage || 0;
+                progressBar.style.width = percentage + '%';
+                progressBar.textContent = percentage + '%';
+                progressBar.setAttribute('aria-valuenow', percentage);
+                
+                // Update status display
+                if (data.status === 'completed') {
+                    statusDisplay.className = 'alert alert-success';
+                    statusDisplay.textContent = data.message || 'Completed successfully!';
+                    progressBar.classList.remove('progress-bar-animated');
+                    startBtn.disabled = false;
+                    clearInterval(pollInterval);
+                } else if (data.status === 'error') {
+                    statusDisplay.className = 'alert alert-danger';
+                    statusDisplay.textContent = data.message || 'An error occurred';
+                    progressContainer.style.display = 'none';
+                    startBtn.disabled = false;
+                    clearInterval(pollInterval);
+                } else if (data.status === 'running') {
+                    statusDisplay.className = 'alert alert-info';
+                    statusDisplay.textContent = data.message || 'Running...';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking progress:', error);
+            });
+    }
+    
+    // Check initial status on page load
+    window.addEventListener('load', function() {
+        fetch('/sheet-updater/progress')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'running') {
+                    document.getElementById('progress-container').style.display = 'block';
+                    document.getElementById('start-btn').disabled = true;
+                    startPolling();
+                }
+            });
+    });
+</script>
+
+{% endblock %}
